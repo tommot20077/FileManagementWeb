@@ -14,6 +14,8 @@
         <link href="assets/css/vendor/jquery-jvectormap-1.2.2.css" rel="stylesheet" type="text/css"/>
         <!-- third party css end -->
 
+        <link href="assets/css/custom/upload-container.css" rel="stylesheet">
+
         <!-- App css -->
         <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css"/>
         <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" id="app-style"/>
@@ -513,16 +515,69 @@
                                                         aria-expanded="false"><i class="mdi mdi-plus"></i> 新建
                                                 </button>
                                                 <div class="dropdown-menu">
-                                                    <a class="dropdown-item"
-                                                       href="#"><i class="mdi mdi-folder-plus-outline me-1"></i> 文件夾</a>
-                                                    <a class="dropdown-item"
-                                                       href="#"><i class="mdi mdi-file-plus-outline me-1"></i> 文件</a>
-                                                    <a class="dropdown-item"
-                                                       href="#"><i class="mdi mdi-file-document me-1"></i> 文檔</a> <a
-                                                    class="dropdown-item"
-                                                    href="#"><i class="mdi mdi-upload me-1"></i> 選擇文件</a>
+                                                    <button class="dropdown-item">
+                                                        <i class="mdi mdi-folder-plus-outline me-1"></i> 文件夾
+                                                    </button>
+                                                    <button class="dropdown-item">
+                                                        <i class="mdi mdi-file-plus-outline me-1"></i> 文件
+                                                    </button>
+                                                    <button class="dropdown-item" id="upload-new-file">
+                                                        <i class="mdi mdi-upload me-1"></i> 選擇文件
+                                                    </button>
                                                 </div>
                                             </div>
+                                            <div id="uploadModal" class="modal-overlay hidden">
+                                                <div class="modal-content">
+                                                    <h4>上傳文件</h4>
+                                                    <!-- File Upload Form -->
+                                                    <form action="/" method="post" class="dropzone" id="dropzone">
+                                                        <div class="fallback">
+                                                            <input name="file" type="file" multiple/>
+                                                        </div>
+
+                                                        <div class="dz-message needsclick">
+                                                            <i class="h1 text-muted dripicons-cloud-upload"></i>
+                                                            <h3>拖放文件到此處或點擊上傳。</h3>
+                                                        </div>
+                                                    </form>
+
+                                                    <!-- Preview -->
+                                                    <div class="dropzone-previews mt-3" id="file-previews"></div>
+
+                                                    <!-- File Preview Template -->
+                                                    <div class="d-none" id="uploadPreviewTemplate">
+                                                        <div class="card mt-1 mb-0 shadow-none border">
+                                                            <div class="p-2">
+                                                                <div class="row align-items-center">
+                                                                    <div class="col-auto">
+                                                                        <img data-dz-thumbnail src="#" class="avatar-sm rounded bg-light" alt="" style="display: none;">
+                                                                        <i class="mdi mdi-file" data-dz-file-icon style="font-size: 2em;"></i>
+                                                                    </div>
+                                                                    <div class="col ps-0">
+                                                                        <a href="javascript:void(0);"
+                                                                           class="text-muted fw-bold"
+                                                                           data-dz-name></a>
+                                                                        <p class="mb-0" data-dz-size></p>
+                                                                    </div>
+                                                                    <div class="col-auto">
+                                                                        <!-- 按鈕 -->
+                                                                        <a href=""
+                                                                           class="btn btn-link btn-lg text-muted"
+                                                                           data-dz-remove>
+                                                                            <i class="dripicons-cross"></i> </a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="mt-3">
+                                                        <button id="submitUpload" class="btn btn-primary">上傳</button>
+                                                        <button id="closeModal" class="btn btn-secondary">關閉</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             <div class="email-menu-list mt-3">
                                                 <a href="#"
                                                    class="list-group-item border-0"><i class="mdi mdi-folder-outline font-18 align-middle me-2"></i>我的 文件</a>
@@ -817,8 +872,15 @@
         <script src="assets/js/vendor.min.js"></script>
         <script src="assets/js/app.min.js"></script>
 
-        <!-- 你的自定義腳本 -->
+        <!-- plugin js -->
+        <script src="assets/js/vendor/dropzone.min.js"></script>
+        <!-- init js -->
+        <script src="assets/js/ui/component.fileupload.js"></script>
+
+
+        <!-- 自定義腳本 -->
         <script type="module" src="assets/js/custom/fetch-file-list.js"></script>
+        <script type="module" src="assets/js/custom/upload-container.js"></script>
 
         <!-- third party js -->
         <script src="assets/js/vendor/apexcharts.min.js"></script>
