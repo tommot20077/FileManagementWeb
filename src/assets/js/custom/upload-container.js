@@ -3,6 +3,8 @@ import Dropzone from 'dropzone';
 import SparkMD5 from 'spark-md5';
 import Config from "../../../../config.js";
 import apiConnector from "./api-connector.js";
+import {WSConnector} from "./ws-connectoer.js";
+import uploadManager from "./upload-manager.js";
 
 
 // 禁用 Dropzone 的自動發起請求
@@ -10,8 +12,6 @@ Dropzone.autoDiscover = false;
 
 // 初始化 Dropzone
 let myDropzone;
-let ongoingUploads = 0;
-
 
 document.addEventListener('DOMContentLoaded', () => {
     // 確保 Dropzone 僅初始化一次
@@ -29,33 +29,32 @@ document.addEventListener('DOMContentLoaded', () => {
         myDropzone.on("addedfile", function (file) {
             const spark = new SparkMD5.ArrayBuffer();
             const reader = new FileReader();
-            const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB
-            let currentChunk = 0;
+            const CHUNK_SIZE = Config.MD5ChunkSize || 1024 * 1024 * 2
+
             const chunks = Math.ceil(file.size / CHUNK_SIZE);
 
-            document.getElementById("submitUpload").disabled = true;
+            toggleUploadButtons(true);
             file.uploadStatus = "processing";
 
             function loadNext() {
-                const start = currentChunk * CHUNK_SIZE;
+                const start = (file.currentChunk || 0) * CHUNK_SIZE;
                 const end = Math.min(start + CHUNK_SIZE, file.size);
                 const chunk = file.slice(start, end);
-
                 reader.readAsArrayBuffer(chunk);
             }
 
             reader.onload = function (e) {
                 spark.append(e.target.result);
-                currentChunk++;
+                file.currentChunk = (file.currentChunk || 0) + 1;
 
-                const progress = Math.round((currentChunk / chunks) * 100);
+                const progress = Math.round((file.currentChunk / chunks) * 100);
                 updateProgress(
                     file.previewElement,
                     progress,
                     'calculating',
                     null
                 );
-                if (currentChunk < chunks) {
+                if (file.currentChunk < chunks) {
                     loadNext();
                 } else {
                     const FileMD5 = spark.end();
@@ -69,101 +68,301 @@ document.addEventListener('DOMContentLoaded', () => {
                     file.uploadStatus = "pending";
                     updateProgress(file.previewElement, 0, 'pending', '等待上傳');
                     checkAllFilesProcessed();
+
                 }
             };
             reader.onerror = function () {
                 updateProgress(file.previewElement, 0, 'error', '雜湊值計算失敗');
                 console.error('檔案讀取錯誤');
+                file.uploadStatus = "failed";
+                checkAllFilesProcessed();
             };
-
             loadNext();
         });
     }
 });
 
-
-const MAX_CONCURRENT_UPLOADS = 3;
-let currentUploads = 0;
-const uploadQueue = [];
-
 //todo 之後改良
 
-function uploadFileInChunks(file, transferTaskId, totalChunks, chunkSize) {
-    const uploadTask = () => {
-        ongoingUploads += 1;
-        const previewElement = file.previewElement;
+// 處理上傳按鈕點擊事件
+document.getElementById('submitUpload').addEventListener('click', () => {
+    removeDropzoneHandleFile(myDropzone);
+    const files = myDropzone.files;
+    if (myDropzone && files.length === 0) {
+        alert('請選擇要上傳的文件');
+        return;
+    }
 
-        for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-            currentUploads += 1;
+    toggleUploadButtons(true);
 
-            const start = chunkIndex * chunkSize;
+    files.forEach(file => {
+        const metadata = file.fileMetadata;
+        if (!metadata) {
+            console.error(`文件 ${file.name} 沒有 fileMetadata，跳過上傳。`);
+            updateProgress(file.previewElement, 0, 'failed', '無效的文件元數據');
+            file.uploadStatus = "failed";
+            if (uploadManager.queue === 0) {
+                toggleUploadButtons(false);
+            }
+            return;
+        }
+
+        const uploadTask = () => {
+            return new Promise((resolve, reject) => {
+                apiConnector.post('/api/file/upload/initialTask', metadata)
+                            .then(response => {
+                                const data = response.data.data;
+                                if (data.isFinished) {
+                                    updateProgress(file.previewElement, 100, 'completed', '上傳完成');
+                                    file.uploadStatus = "success";
+                                    resolve();
+                                } else {
+                                    const transferTaskId = data.transferTaskId;
+                                    const totalChunks = data.totalChunks;
+                                    const chunkSize = data.chunkSize;
+                                    console.log(`開始上傳文件 ${file.name}，transferTaskId: ${transferTaskId}`);
+
+                                    uploadChunksViaAxios(file, transferTaskId, totalChunks, chunkSize)
+                                        .then(() => resolve())
+                                        .catch(err => reject(err));
+                                }
+                            }).catch(error => {
+                    const data = error.response ? error.response.data : {};
+                    console.error(`初始請求失敗：${data.message}`);
+                    updateProgress(file.previewElement, 0, 'failed', "上傳失敗: " + (data.message || '未知錯誤'));
+                    file.uploadStatus = "failed";
+                    reject(new Error(data.message || '未知錯誤'));
+                });
+            });
+        };
+
+        uploadManager.enqueue(uploadTask)
+                     .then(() => {
+                         console.log(`文件 ${file.name} 上傳完成`);
+                         // 檢查是否所有任務完成
+                         if (uploadManager.currentUploads === 0 && uploadManager.queue.length === 0) {
+                             toggleUploadButtons(false);
+                         }
+                     })
+                     .catch(err => {
+                         console.error(`文件 ${file.name} 上傳失敗:`, err);
+                         if (uploadManager.currentUploads === 0 && uploadManager.queue.length === 0) {
+                             toggleUploadButtons(false);
+                         }
+                     });
+    });
+});
+
+
+document.getElementById('submitUploadWs').addEventListener('click', () => {
+    removeDropzoneHandleFile(myDropzone);
+    const files = myDropzone.files;
+    if (files.length === 0) {
+        alert("沒有待上傳的文件。");
+        return;
+    }
+
+    toggleUploadButtons(true); // 開始上傳時禁用按鈕
+
+    files.forEach(file => {
+        const metadata = file.fileMetadata;
+        if (!metadata) {
+            console.error(`文件 ${file.name} 沒有 fileMetadata，跳過上傳。`);
+            updateProgress(file.previewElement, 0, 'failed', '無效的文件元數據');
+            file.uploadStatus = "failed";
+            return;
+        }
+
+        // 定義 WebSocket 上傳任務
+        const uploadTask = () => {
+            return new Promise((resolve, reject) => {
+                const ws = new WSConnector(`${Config.wsUrl}/file/upload`, Config.jwt);
+
+                ws.addEventListener('open', () => {
+                    const initialUploadMessage = {
+                        type: "initialUpload",
+                        data: metadata,
+                    };
+                    ws.send(initialUploadMessage);
+                });
+
+                ws.addEventListener('message', (response) => {
+                    if (response.message === "初始化上傳任務成功") {
+                        const transferTaskId = response.data.transferTaskId;
+                        console.log(`初始化上傳任務成功，transferTaskId: ${transferTaskId}`);
+
+                        uploadChunksViaWebSocket(ws, file, transferTaskId, response.data.totalChunks, response.data.chunkSize)
+                            .then(() => {
+                                resolve();
+                                ws.close();
+                            })
+                            .catch(err => {
+                                reject(err);
+                                ws.close();
+                            });
+                    } else if (response.message === "上傳任務完成") {
+                            if (response.data.isFinished) {
+                                console.log(`文件 ${file.name} 上傳完成`);
+                                updateProgress(file.previewElement, 100, 'completed', '上傳完成');
+                                file.uploadStatus = "success";
+                                resolve();
+                                ws.close();
+                            }
+
+                    } else if (response.message.startsWith("上傳失敗") || response.message.startsWith("建立上傳任務失敗")) {
+                        const errorMessage = response.message;
+                        console.error(`上傳失敗：${errorMessage}`);
+                        updateProgress(file.previewElement, 0, 'failed', errorMessage);
+                        reject(new Error(errorMessage));
+                        ws.close();
+                    }
+                });
+
+                ws.addEventListener('error', (error) => {
+                    console.error("WebSocket 錯誤:", error);
+                    updateProgress(file.previewElement, 0, 'failed', "WebSocket 發生錯誤。");
+                    reject(error);
+                    ws.close();
+                });
+            });
+        };
+
+        // 將 WebSocket 上傳任務加入上傳管理器
+        uploadManager.enqueue(uploadTask)
+                     .then(() => {
+                         console.log(`文件 ${file.name} 通過 WebSocket 上傳完成！`);
+                         // 檢查是否所有任務完成
+                         if (uploadManager.currentUploads === 0 && uploadManager.queue.length === 0) {
+                             toggleUploadButtons(false); // 所有上傳完成後恢復按鈕
+                         }
+                     })
+                     .catch(err => {
+                         console.error(`文件 ${file.name} 通過 WebSocket 上傳失敗:`, err);
+                         if (uploadManager.currentUploads === 0 && uploadManager.queue.length === 0) {
+                             toggleUploadButtons(false); // 上傳失敗後恢復按鈕
+                         }
+                     });
+    });
+});
+
+function uploadChunksViaAxios(file, transferTaskId, totalChunks, chunkSize) {
+    return new Promise((resolve, reject) => {
+        for (let chunkIndex = 1; chunkIndex <= totalChunks; chunkIndex++) {
+            const start = (chunkIndex - 1) * chunkSize;
             const end = Math.min(start + chunkSize, file.size);
-            const chunkData = file.slice(start, end);
+            const chunk = file.slice(start, end);
 
             const reader = new FileReader();
             reader.onload = function (e) {
                 const base64String = arrayBufferToBase64(e.target.result);
+                const currentChunkMd5 = calculateMD5BlobSync(e.target.result); // 同步計算 MD5
+
                 const uploadChunkDTO = {
                     transferTaskId: transferTaskId,
                     totalChunks: totalChunks,
-                    chunkIndex: chunkIndex + 1, // 分塊索引從1開始
-                    chunkData: base64String // 分塊數據
+                    chunkIndex: chunkIndex,
+                    chunkData: base64String, // 分塊數據
+                    md5: currentChunkMd5
                 };
 
-                // 發送分塊上傳請求
                 apiConnector.post(`${Config.apiUrl}/api/file/upload/uploadFileData`, uploadChunkDTO)
                             .then(response => {
-                                let data = response.data.data;
-                                currentUploads -= 1;
+                                const data = response.data.data;
                                 if (data.isSuccess) {
-                                    updateProgress(previewElement, data.progress, 'uploading', '上傳中');
-
+                                    updateProgress(file.previewElement, data.progress, 'uploading', `上傳中 ${data.progress}%`);
                                     if (data.progress === 100.0) {
-                                        updateProgress(previewElement, 100, 'completed', '上傳完成');
+                                        updateProgress(file.previewElement, 100, 'completed', '上傳完成');
                                         file.uploadStatus = "success";
-                                        ongoingUploads -= 1;
-                                        if (ongoingUploads === 0) {
-                                            toggleUploadButtons(false);
-                                        }
-                                        processQueue(); // 處理隊列中的下一個任務
+                                        resolve();
                                     }
                                 } else {
-                                    console.error(`分塊 ${chunkIndex + 1} 上傳失敗：${data.message}`);
-                                    updateProgress(previewElement, 0, 'failed', '上傳失敗');
-                                    ongoingUploads -= 1;
-                                    if (ongoingUploads === 0) {
-                                        toggleUploadButtons(false);
-                                    }
-                                    processQueue(); // 處理隊列中的下一個任務
+                                    console.error(`分塊 ${chunkIndex} 上傳失敗：${data.message}`);
+                                    updateProgress(file.previewElement, 0, 'failed', '上傳失敗');
+                                    file.uploadStatus = "failed";
+                                    reject(new Error(data.message));
                                 }
                             })
                             .catch(error => {
-                                console.error(`分塊 ${chunkIndex + 1} 上傳請求失敗：${error.message}`);
-                                updateProgress(previewElement, 0, 'failed', '上傳失敗');
-                                ongoingUploads -= 1;
-                                currentUploads -= 1;
-                                if (ongoingUploads === 0) {
-                                    toggleUploadButtons(false);
-                                }
-                                processQueue(); // 處理隊列中的下一個任務
+                                console.error(`分塊 ${chunkIndex} 上傳請求失敗：${error.message}`);
+                                updateProgress(file.previewElement, 0, 'failed', '上傳失敗');
+                                file.uploadStatus = "failed";
+                                reject(error);
                             });
             };
-            reader.readAsArrayBuffer(chunkData); // 讀取分塊數據
+            reader.onerror = function () {
+                console.error(`分塊 ${chunkIndex} 讀取失敗`);
+                updateProgress(file.previewElement, 0, 'failed', '讀取分塊失敗');
+                file.uploadStatus = "failed";
+                reject(new Error('讀取分塊失敗'));
+            };
+            reader.readAsArrayBuffer(chunk);
         }
-    };
-
-    if (currentUploads < MAX_CONCURRENT_UPLOADS) {
-        uploadTask();
-    } else {
-        uploadQueue.push(uploadTask);
-    }
+    });
 }
 
-function processQueue() {
-    if (uploadQueue.length > 0 && currentUploads < MAX_CONCURRENT_UPLOADS) {
-        const nextTask = uploadQueue.shift();
-        nextTask();
-    }
+function uploadChunksViaWebSocket(ws, file, transferTaskId, totalChunks, chunkSize) {
+    return new Promise((resolve, reject) => {
+        ws.addEventListener('message', function handleMessage(response) {
+            if (response.message === "分塊上傳成功" || response.message === "上傳任務完成") {
+                const data = response.data;
+                if (data.isFinished) {
+                    console.log(`文件 ${file.name} 上傳完成`);
+                    updateProgress(file.previewElement, 100, 'completed', '上傳完成');
+                    file.uploadStatus = "success";
+                    resolve();
+                    ws.removeEventListener('message', handleMessage);
+                } else {
+                    console.log(`分塊 ${data.chunkIndex} 上傳成功`);
+                    updateProgress(file.previewElement, data.progress, 'uploading', `上傳中 ${data.progress}%`);
+                }
+            } else if (response.message.startsWith("上傳失敗")) {
+                console.error(`上傳失敗：${response.message}`);
+                updateProgress(file.previewElement, 0, 'failed', response.message);
+                file.uploadStatus = "failed";
+                reject(new Error(response.message));
+                ws.removeEventListener('message', handleMessage);
+            }
+        });
+
+        for (let chunkIndex = 1; chunkIndex <= totalChunks; chunkIndex++) {
+            const start = (chunkIndex - 1) * chunkSize;
+            const end = Math.min(start + chunkSize, file.size);
+            const blob = file.slice(start, end);
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const base64String = arrayBufferToBase64(e.target.result);
+                const currentChunkMd5 = calculateMD5BlobSync(e.target.result); // 同步計算 MD5
+
+                const bufferUploadMessage = {
+                    type: "bufferUpload",
+                    data: {
+                        transferTaskId: transferTaskId,
+                        chunkIndex: chunkIndex,
+                        chunkData: base64String,
+                        totalChunks: totalChunks,
+                        md5: currentChunkMd5,
+                    },
+                };
+
+                ws.send(bufferUploadMessage);
+            };
+            reader.onerror = function () {
+                console.error(`分塊 ${chunkIndex} 讀取失敗`);
+                updateProgress(file.previewElement, 0, 'failed', '讀取分塊失敗');
+                file.uploadStatus = "failed";
+                reject(new Error('讀取分塊失敗'));
+            };
+            reader.readAsArrayBuffer(blob); // 讀取分塊數據
+        }
+    });
+}
+
+
+function calculateMD5BlobSync(arrayBuffer) {
+    const spark = new SparkMD5.ArrayBuffer();
+    spark.append(arrayBuffer);
+    return spark.end();
 }
 
 function arrayBufferToBase64(buffer) {
@@ -176,11 +375,17 @@ function arrayBufferToBase64(buffer) {
     return window.btoa(binary);
 }
 
+
 function toggleUploadButtons(disabled) {
     const uploadButton = document.getElementById('submitUpload');
+    const uploadWsButton = document.getElementById('submitUploadWs');
     const closeButton = document.getElementById('closeModal');
+
     if (uploadButton) {
         uploadButton.disabled = disabled;
+    }
+    if (uploadWsButton) {
+        uploadWsButton.disabled = disabled;
     }
     if (closeButton) {
         closeButton.disabled = disabled;
@@ -189,7 +394,11 @@ function toggleUploadButtons(disabled) {
 
 function checkAllFilesProcessed() {
     const allProcessed = myDropzone.files.every(file => file.uploadStatus !== "processing");
-    document.getElementById('submitUpload').disabled = !allProcessed;
+    if (allProcessed) {
+        toggleUploadButtons(false);
+    } else {
+        toggleUploadButtons(true);
+    }
 }
 
 function updateProgress(previewElement, percentage, status, message) {
@@ -207,18 +416,32 @@ function updateProgress(previewElement, percentage, status, message) {
         statusText.style.backgroundColor = '#f44336'; // 紅色表示失敗
         statusText.textContent = message;
     } else if (status === 'uploading') {
-        progressBar.style.width = `${percentage}%`;
+        console.log("獲取進度更新")
+        progressBar.style.width = `${Number(percentage).toFixed(2)}%`;
         progressBar.style.backgroundColor = '#2196f3'; // 藍色表示上傳中
-        statusText.textContent = `${percentage}% 上傳中...`;
+        statusText.textContent = `${Number(percentage).toFixed(2)}% 上傳中...`;
     } else if (status === 'calculating') {
-        progressBar.style.width = `${percentage}%`;
+        progressBar.style.width = `${Number(percentage).toFixed(2)}%`;
         progressBar.style.backgroundColor = '#ffc343'; // 黃色表示計算中
-        statusText.textContent = `${percentage}% 雜湊值計算中...`;
+        statusText.textContent = `${Number(percentage).toFixed(2)}% 雜湊值計算中...`;
+    } else if (status === 'pending') {
+        progressBar.style.width = '0%';
+        progressBar.style.backgroundColor = '#9e9e9e'; // 灰色表示等待
+        statusText.textContent = message;
     } else {
         progressBar.style.width = '0%';
-        statusText.style.backgroundColor = '#f1f1f1'; // 底色略白
+        progressBar.style.backgroundColor = '#f1f1f1'; // 底色略白
         statusText.textContent = message;
     }
+}
+
+function removeDropzoneHandleFile(myDropzone) {
+    myDropzone.files.forEach(file => {
+        const fileStatus = file.uploadStatus;
+        if (fileStatus !== "pending") {
+            myDropzone.removeFile(file);
+        }
+    });
 }
 
 
@@ -227,7 +450,7 @@ document.getElementById('upload-new-file').addEventListener('click', (event) => 
     event.preventDefault();
     document.getElementById('uploadModal').classList.remove('hidden'); // 顯示模態框
     document.body.classList.add('no-scroll');
-    document.getElementById("submitUpload").disabled = true;
+    toggleUploadButtons(true);
 });
 
 // 隱藏模態框
@@ -237,74 +460,5 @@ document.getElementById('closeModal').addEventListener('click', () => {
         myDropzone.removeAllFiles(true); // 清除已選文件
     }
     document.body.classList.remove('no-scroll');
-});
-
-// 處理上傳按鈕點擊事件
-document.getElementById('submitUpload').addEventListener('click', () => {
-    let task = []
-    const files = myDropzone.getQueuedFiles();
-    if (myDropzone && files.length === 0) {
-        alert('請選擇要上傳的文件');
-        return;
-    }
-
-    toggleUploadButtons(true);
-    files.forEach(file => {
-        const fileStatus = file.uploadStatus;
-        if (fileStatus === "pending") {
-            task.push(file);
-        } else {
-            myDropzone.removeFile(file);
-        }
-    });
-
-    task.forEach(file => {
-        const metadata = file.fileMetadata;
-        if (!metadata) {
-            console.error(`文件 ${file.name} 沒有 fileMetadata，跳過上傳。`);
-            updateProgress(file.previewElement, 0, 'failed', '無效的文件元數據');
-            file.uploadStatus = "failed";
-            if (ongoingUploads === 0) {
-                toggleUploadButtons(false);
-            }
-            return;
-        }
-
-        let data;
-        apiConnector.post('/api/file/upload/initialTask', metadata)
-                    .then(response => {
-                        data = response.data.data;
-                        if (data.isFinished) {
-                            updateProgress(file.previewElement, 100, 'completed', '上傳完成');
-                            file.uploadStatus = "success";
-                            if (ongoingUploads === 0) {
-                                toggleUploadButtons(false);
-                            }
-                        } else {
-                            // 獲取 transferTaskId 和 totalChunks
-                            const transferTaskId = data.transferTaskId;
-                            const totalChunks = data.totalChunks;
-                            const chunkSize = data.chunkSize;
-                            console.log(`文件 ${file.name} 需要分成 ${totalChunks} 個分塊進行上傳`);
-                            console.log(`每個分塊大小為 ${chunkSize} 字節`);
-                            console.log(`開始上傳文件 ${file.name}，transferTaskId: ${transferTaskId}`);
-                            // 開始分塊上傳
-                            uploadFileInChunks(file, transferTaskId, totalChunks, chunkSize);
-                        }
-                    })
-                    .catch(error => {
-                        data = error.response.data;
-                        console.error(`初始請求失敗：${data.message}`);
-                        updateProgress(file.previewElement, 0, 'failed', "上傳失敗: " + (data.message || '未知錯誤'));
-                        if (ongoingUploads === 0) {
-                            toggleUploadButtons(false);
-                        }
-
-                        file.uploadStatus = "failed";
-                    }).finally(() => {
-            console.log('當前上傳任務數量：', ongoingUploads);
-        });
-    });
-    //myDropzone.processQueue();
-    //todo 小檔案之後處理
+    toggleUploadButtons(false);
 });
