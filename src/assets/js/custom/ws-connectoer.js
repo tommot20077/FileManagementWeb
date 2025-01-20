@@ -17,7 +17,7 @@ export class WSConnector {
 
     onMessage(event) {
         const response = JSON.parse(event.data);
-        console.log("收到 WebSocket 服務器消息:", response);
+        //console.log("收到 WebSocket 服務器消息:", response);
         if (this.listeners['message']) {
             this.listeners['message'].forEach(callback => callback(response));
         }
