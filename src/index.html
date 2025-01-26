@@ -15,10 +15,12 @@
         <!-- third party css end -->
 
         <link href="assets/css/custom/upload-container.css" rel="stylesheet">
+        <link href="assets/css/custom/container.css" rel="stylesheet">
 
         <!-- App css -->
         <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css"/>
         <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" id="app-style"/>
+
 
     </head>
 
@@ -486,11 +488,7 @@
                             <div class="col-12">
                                 <div class="page-title-box">
                                     <div class="page-title-right">
-                                        <ol class="breadcrumb m-0">
-                                            <li class="breadcrumb-item"><a href="javascript: void(0);">Hyper</a></li>
-                                            <li class="breadcrumb-item"><a href="javascript: void(0);">應用程式</a></li>
-                                            <li class="breadcrumb-item active">文件管理器</li>
-                                        </ol>
+                                        <ol class="breadcrumb m-0" id="breadcrumb"></ol>
                                     </div>
                                     <h4 class="page-title">文件管理器</h4>
                                 </div>
@@ -515,7 +513,7 @@
                                                         aria-expanded="false"><i class="mdi mdi-plus"></i> 新建
                                                 </button>
                                                 <div class="dropdown-menu">
-                                                    <button class="dropdown-item">
+                                                    <button class="dropdown-item" id="add-new-folder">
                                                         <i class="mdi mdi-folder-plus-outline me-1"></i> 文件夾
                                                     </button>
                                                     <button class="dropdown-item">
@@ -526,6 +524,30 @@
                                                     </button>
                                                 </div>
                                             </div>
+
+                                            <div id="addFolderModal" class="modal-overlay hidden">
+                                                <div class="modal-content" style="max-width: 600px">
+                                                    <h4>新增資料夾</h4>
+                                                    <form class="form-horizontal">
+                                                        <div class="row mb-3">
+                                                            <label for="newFolderName" class="col-2 col-form-label">名稱</label>
+                                                            <div class="col-10">
+                                                                <input type="text" class="form-control" id="newFolderName" placeholder="資料夾名稱">
+                                                            </div>
+                                                            <div>
+                                                                <i href="javascript:void(0);" class="error-message" id="newFolderNameError"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div class="justify-content-end row">
+                                                            <div class="col-12">
+                                                                <button type="button" class="btn btn-info" id="addNewFolder">新增</button>
+                                                                <button type="button" class="btn btn-secondary" id="cancelAddNewFolder">取消</button>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+
                                             <div id="uploadModal" class="modal-overlay hidden">
                                                 <div class="modal-content">
                                                     <h4>上傳文件</h4>
@@ -594,6 +616,43 @@
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <div id="editFileModal" class="modal-overlay hidden">
+                                                <div class="modal-content" style="max-width: 600px">
+                                                    <h4>編輯檔案</h4>
+                                                    <form class="form-horizontal">
+                                                        <div class="row mb-3">
+                                                            <label for="editFileName" class="col-2 col-form-label">名稱</label>
+                                                            <div class="col-10">
+                                                                <input type="text" class="form-control" id="editFileName" placeholder="檔案名稱">
+                                                                <input type="hidden" id="editFileId">
+                                                                <input type="hidden" id="isFolder">
+                                                                <input type="hidden" id="shareUsers">
+                                                                <input type="hidden" id="parentFolderId">
+                                                            </div>
+                                                            <div>
+                                                                <a href="javascript:void(0);" class="error-message" id="editFileNameError"></a>
+                                                            </div>
+                                                        </div>
+                                                        <div class="justify-content-end row">
+                                                            <div class="col-12">
+                                                                <button type="button" class="btn btn-primary" id="saveEditFile">儲存</button>
+                                                                <button type="button" class="btn btn-secondary" id="cancelEditFile">取消</button>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                            <!-- 移動檔案的模態框 -->
+                                            <div id="moveFileModal" class="modal-overlay hidden">
+                                                <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                                                    <h4>移動檔案/資料夾</h4>
+                                                    <div id="moveFileContainer">
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
 
                                             <div class="email-menu-list mt-3">
                                                 <a href="#"
@@ -894,8 +953,8 @@
 
 
         <!-- 自定義腳本 -->
-        <script type="module" src="assets/js/custom/fetch-file-list.js"></script>
-        <script type="module" src="assets/js/custom/upload-container.js"></script>
+        <script type="module" src="main.js"></script>
+
 
         <!-- third party js -->
         <script src="assets/js/vendor/apexcharts.min.js"></script>

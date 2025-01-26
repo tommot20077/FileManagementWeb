@@ -4,6 +4,7 @@ import Config from "../../../../config.js";
 import uploadManager from "./upload-manager.js";
 
 import ChunkUploadManager from "./chunk-upload-manager.js";
+import {fetchFileList, currentFolderId} from "./fetch-file-list.js";
 
 // 禁用 Dropzone 的自動發起請求
 Dropzone.autoDiscover = false;
@@ -16,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropzoneElement = document.getElementById('dropzone');
     if (dropzoneElement && !dropzoneElement.dropzone) {
         myDropzone = new Dropzone(dropzoneElement, {
-            url: `${Config.apiUrl}/api/file/upload/initialTask`,
+            url: `${Config.apiUrl}/api/files/upload`,
             autoProcessQueue: false, // 禁用自動上傳
             previewsContainer: "#file-previews",
             previewTemplate: document.querySelector("#uploadPreviewTemplate").innerHTML,
@@ -56,10 +57,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadNext();
                 } else {
                     const FileMD5 = spark.end();
+                    let parentFolderId = ""
+                    if (currentFolderId > 0) {
+                        parentFolderId = currentFolderId;
+                    }
+
                     file.fileMetadata = {
                         fileName: file.name,
-                        filePath: "/upload/" + file.name,
-                        //filePath: file.path || file.name //todo 後期處理
+                        parentFolderId: parentFolderId,
                         md5: FileMD5,
                         fileSize: file.size,
                     };
@@ -292,4 +297,7 @@ document.getElementById('closeModal').addEventListener('click', () => {
     }
     document.body.classList.remove('no-scroll');
     toggleUploadButtons(false);
+    fetchFileList(currentFolderId, false).then();
 });
+
+export default {};

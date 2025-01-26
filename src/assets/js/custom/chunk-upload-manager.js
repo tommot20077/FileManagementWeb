@@ -30,7 +30,7 @@ class ChunkUploadManager {
 
     initHttpUpload() {
         const metadata = this.file.fileMetadata;
-        apiConnector.post('/api/file/upload/initialTask', metadata)
+        apiConnector.post('/api/files/upload', metadata)
                     .then(response => {
                         const data = response.data.data;
                         if (data.isFinished) {
@@ -71,7 +71,7 @@ class ChunkUploadManager {
                 this.chunkSize = response.data.chunkSize;
                 this.enqueueChunks();
                 this.processQueue();
-            } else if (response.message === "建立上傳任務失敗") {
+            } else if (response.message.includes("建立上傳任務失敗")) {
                 this.onProgress(0, 'failed', `上傳失敗: ${response.message}`);
                 this.onError(new Error(response.message));
                 this.ws.close();
@@ -174,7 +174,7 @@ class ChunkUploadManager {
                     md5: currentChunkMd5
                 };
 
-                apiConnector.post(`${Config.apiUrl}/api/file/upload/uploadFileData`, uploadChunkDTO)
+                apiConnector.post(`${Config.apiUrl}/api/files/upload-chunk`, uploadChunkDTO)
                             .then(response => {
                                 const data = response.data.data;
                                 if (data.isSuccess) {
