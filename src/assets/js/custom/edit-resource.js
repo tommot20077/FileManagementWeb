@@ -15,15 +15,16 @@ document.getElementById("addNewFolder").addEventListener('click', () => {
         }
 
         try {
+            const parentFolderId = currentFolderId === 0 ? null : currentFolderId;
             apiConnector.post('/api/folders', {
                 fileName: folderName,
-                parentFolderId: currentFolderId,
+                parentFolderId: parentFolderId,
                 shareUsers: []
             }).then(response => {
                 if (response.data.status === 200) {
                     document.getElementById('newFolderName').value = '';
                     document.getElementById("addFolderModal").classList.add("hidden");
-                    fetchFileList(currentFolderId, false).then();
+                    fetchFileList(currentFolderId).then();
                 } else {
                     errorContainer.textContent = response.data.message || '新增資料夾失敗。';
                 }
@@ -87,7 +88,7 @@ document.getElementById("saveEditFile").addEventListener('click', async () => {
             document.getElementById('editFileId').value = '';
             document.getElementById("isFolder").value = '';
             document.getElementById("editFileModal").classList.add("hidden");
-            await fetchFileList(currentFolderId, false); // 刷新檔案列表
+            await fetchFileList(currentFolderId); // 刷新檔案列表
         } else {
             // 後端返回錯誤狀態
             errorContainer.textContent = response.data.message || '編輯檔案失敗。';

@@ -6,11 +6,10 @@ class FolderTree {
         this.container = document.getElementById("moveFileContainer");
         this.file = file;
         this.selectedFolderId = null;
-        this.pathStack = [{
-            id: 0,
-            name: '根目錄'
-        }];
-        this.init().then(() => {});
+        this.currentFolders = [];
+        this.folderCache = {};
+        this.init().then(() => {
+        });
     }
 
     async init() {
@@ -26,18 +25,30 @@ class FolderTree {
 
         const ul = document.createElement('ul');
         ul.className = 'side-nav-second-level folder-list';
-        await this.generateFolderList(0, ul);
+        await this.generateFolderList(0, ul).then(() => {
+            this.updateBreadcrumb(0);
+        });
         this.container.appendChild(ul);
 
         this.addActionButtons();
-        this.updateBreadcrumb();
+
+    }
+    async getData(folderId) {
+        if (this.folderCache[folderId]) {
+            return this.folderCache[folderId];
+        }
+
+        const response = await apiConnector.get(`/api/folders/${folderId}`);
+        this.folderCache[folderId] = response.data.data;
+        return response.data.data;
     }
 
-
     async generateFolderList(folderId, parentElement) {
-        parentElement.innerHTML = ''; // 清空現有內容
+        parentElement.innerHTML = '';
+        const folderData = await this.getData(folderId);
+        const folders = folderData.files;
+        this.currentFolders = folderData.filePaths
 
-        // 如果不是根目錄，添加返回上層選項
         if (folderId !== 0) {
             const backLi = document.createElement('li');
             backLi.className = 'side-nav-item folder-item';
@@ -51,22 +62,23 @@ class FolderTree {
             const backLink = backLi.querySelector('a');
             backLink.addEventListener('click', async (e) => {
                 e.preventDefault();
-                this.pathStack.pop();
-                const parentFolder = this.pathStack[this.pathStack.length - 1];
-                await this.loadFolder(parentFolder.id);
+                if (this.currentFolders.length > 1) {
+                    await this.loadFolder(this.currentFolders[1].folderId);
+                }
             });
 
             parentElement.appendChild(backLi);
         }
-        const response = await apiConnector.get(`/api/folders/${folderId}`);
-        const folders = response.data.data.files;
+
         if (!this.selectedFolderId) {
             this.selectedFolderId = folderId === 0 ? null : folderId;
         }
 
 
         folders.forEach((folder) => {
-            if (!folder.folder) return;
+            if (!folder.filename || !folder.folder) {
+                return;
+            }
 
             const li = document.createElement('li');
             li.className = 'side-nav-item folder-item';
@@ -80,43 +92,51 @@ class FolderTree {
             const folderLink = li.querySelector('a');
             folderLink.addEventListener('click', async (e) => {
                 e.preventDefault();
-                await this.loadFolder(folder.id, folder.filename);
+                let folderId = folder.id == null ? 0 : folder.id;
+                await this.loadFolder(folderId);
             });
 
             parentElement.appendChild(li);
         });
     }
 
-    async loadFolder(folderId, folderName = '') {
-        // 更新選中的資料夾ID
-        this.selectedFolderId = folderId;
-
-        // 更新路徑堆疊
-        if (folderId !== null) {
-            this.pathStack.push({
-                id: folderId,
-                name: folderName
-            });
-        }
-
-        // 重新載入資料夾列表
+    async loadFolder(folderId) {
+        this.selectedFolderId = folderId === 0 ? null : folderId;
+        folderId = folderId === null ? 0 : folderId;
         const ul = this.container.querySelector('ul');
-        await this.generateFolderList(folderId, ul);
-
-        // 更新麵包屑
-        this.updateBreadcrumb();
+        await this.generateFolderList(folderId, ul).then(() => {
+            this.updateBreadcrumb(folderId);
+        });
     }
 
 
-    updateBreadcrumb() {
+    updateBreadcrumb(folderId) {
+        if (!Array.isArray(this.currentFolders)) {
+            return;
+        }
+
+        const filePaths = [...this.currentFolders].reverse();
+
+
         const breadcrumb = this.container.querySelector('.breadcrumb');
+        if (!breadcrumb) {
+            return;
+        }
+
+
+        this.selectedFolderId = folderId;
+
         breadcrumb.innerHTML = '';
 
-        this.pathStack.forEach((folder, index) => {
+        filePaths.forEach((folder, index) => {
+            if (!folder || !folder.name) {
+                return;
+            }
+
             const li = document.createElement('li');
             li.className = 'breadcrumb-item';
 
-            if (index === this.pathStack.length - 1) {
+            if (index === filePaths.length - 1) {
                 li.classList.add('active');
                 li.textContent = folder.name;
             } else {
@@ -125,8 +145,8 @@ class FolderTree {
                 a.textContent = folder.name;
                 a.addEventListener('click', async (e) => {
                     e.preventDefault();
-                    this.pathStack = this.pathStack.slice(0, index + 1);
-                    await this.loadFolder(folder.id);
+                    folderId = folder.folderId == null ? 0 : folder.folderId;
+                    await this.loadFolder(folderId);
                 });
                 li.appendChild(a);
             }
@@ -148,12 +168,12 @@ class FolderTree {
         const moveButton = document.getElementById('moveButton');
         const cancelButton = document.getElementById('cancelButton');
 
-        // 移動按鈕事件
         moveButton.addEventListener('click', async () => {
+            const FolderId = this.selectedFolderId === 0 ? null : this.selectedFolderId;
             const data = {
                 fileId: this.file.id,
                 fileName: this.file.filename,
-                parentFolderId: this.selectedFolderId,
+                parentFolderId: FolderId,
                 shareUserIds: this.file.shareUsers
             }
             let url;
@@ -170,17 +190,14 @@ class FolderTree {
                 }
             } catch (error) {
                 console.error('移動失敗:', error);
-                alert('移動失敗，請稍後再試');
             }
         });
 
-        // 取消按鈕事件
         cancelButton.addEventListener('click', () => {
             closeMoveFileModal();
         });
     }
 }
-
 
 
 export function openMoveFileModal(file) {

@@ -297,7 +297,7 @@ document.getElementById('closeModal').addEventListener('click', () => {
     }
     document.body.classList.remove('no-scroll');
     toggleUploadButtons(false);
-    fetchFileList(currentFolderId, false).then();
+    fetchFileList(currentFolderId).then();
 });
 
 export default {};

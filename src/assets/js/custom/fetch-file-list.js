@@ -6,13 +6,8 @@ import {openMoveFileModal} from "./folder-tree.js";
 
 export let currentFolderId = 0;
 const breadcrumb = document.getElementById('breadcrumb');
-const pathStack = [{
-    id: 0,
-    name: '根目錄'
-}];
 
-
-export async function fetchFileList(folderId = 0, shouldPush = true) {
+export async function fetchFileList(folderId = 0) {
     currentFolderId = folderId;
     let response;
     try {
@@ -21,18 +16,9 @@ export async function fetchFileList(folderId = 0, shouldPush = true) {
         const tbody = document.querySelector('.table-responsive tbody');
         const username = response.data.data.username;
         const userId = response.data.data.userId;
+        const filePaths = response.data.data.filePaths;
 
-        if (folderId === 0) {
-            pathStack.length = 1;
-        } else if (shouldPush) {
-            const currentFolderName = response.data.data.parentFolder.filename || '資料夾';
-            pathStack.push({
-                id: folderId,
-                name: currentFolderName
-            });
-        }
-
-        updateBreadcrumb();
+        updateBreadcrumb(filePaths);
 
         tbody.innerHTML = '';
 
@@ -242,7 +228,7 @@ async function deleteFile(fileId, isFolder) {
         apiConnector.delete(`/api/folders/${fileId}`).then(response => {
             const status = response.data.status;
             if (status === 200) {
-                fetchFileList(currentFolderId, false).then();
+                fetchFileList(currentFolderId).then();
             }
         } ).catch(error => {
             console.error(error);
@@ -251,7 +237,7 @@ async function deleteFile(fileId, isFolder) {
         apiConnector.delete(`/api/files/${fileId}`).then(response => {
             const status = response.data.status;
             if (status === 200) {
-                fetchFileList(currentFolderId, false).then();
+                fetchFileList(currentFolderId).then();
             }
         }).catch(error => {
             console.error(error);
@@ -259,27 +245,28 @@ async function deleteFile(fileId, isFolder) {
     }
 }
 
-function updateBreadcrumb() {
+function updateBreadcrumb(filePaths) {
     breadcrumb.innerHTML = '';
 
-    pathStack.forEach((folder, index) => {
-        if (index > 0) {
-            const separator = document.createElement('li');
-            separator.classList.add('breadcrumb-item', 'separator');
-            separator.innerHTML = `<i class="mdi mdi-chevron-right"></i>`;
-            breadcrumb.appendChild(separator);
-        }
-
+    filePaths.reverse().forEach((folder, index) => {
         const breadcrumbItem = document.createElement('li');
         breadcrumbItem.classList.add('breadcrumb-item');
+        if (folder.folderId == null) {
+            folder.folderId = 0;
+            folder.name = '根目錄';
+        }
 
-        if (index === pathStack.length - 1) {
+        if (folder.folderId === currentFolderId || folder.folderId === null) {
             breadcrumbItem.classList.add('active');
             breadcrumbItem.textContent = folder.name;
         } else {
             const breadcrumbLink = document.createElement('a');
-            breadcrumbLink.href = `?parent-folder-id=${folder.id}`;
+            breadcrumbLink.href = `javascript:void(0);`;
             breadcrumbLink.textContent = folder.name;
+            breadcrumbLink.addEventListener('click', async () => {
+                let folderId = folder.folderId == null ? 0 : folder.folderId;
+                await fetchFileList(folderId);
+            });
             breadcrumbItem.appendChild(breadcrumbLink);
         }
 
