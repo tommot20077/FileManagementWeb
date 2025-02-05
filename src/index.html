@@ -367,19 +367,19 @@
                                     <i class="dripicons-gear noti-icon"></i> </a>
                             </li>
 
-                            <li class="dropdown notification-list">
+                            <li class="dropdown notification-list" id="user-operation-list">
                                 <a class="nav-link dropdown-toggle nav-user arrow-none me-0"
                                    data-bs-toggle="dropdown"
                                    href="#"
                                    role="button"
                                    aria-haspopup="false"
                                    aria-expanded="false">
-                        <span class="account-user-avatar">
-                            <img src="assets/images/users/avatar-1.jpg" alt="用戶圖片" class="rounded-circle">
-                        </span> <span>
-                            <span class="account-user-name">Dominic Keller</span>
-                            <span class="account-position">創辦人</span>
-                        </span> </a>
+                                <span class="account-user-avatar">
+                                    <img src="assets/images/users/avatar-1.jpg" alt="用戶圖片" class="rounded-circle">
+                                </span> <span>
+                                        <span class="account-user-name"></span>
+                                        <span class="account-position"></span>
+                                    </span> </a>
                                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated topbar-dropdown-menu profile-dropdown">
                                     <!-- item-->
                                     <div class=" dropdown-header noti-title">
@@ -530,18 +530,30 @@
                                                     <h4>新增資料夾</h4>
                                                     <form class="form-horizontal">
                                                         <div class="row mb-3">
-                                                            <label for="newFolderName" class="col-2 col-form-label">名稱</label>
+                                                            <label for="newFolderName"
+                                                                   class="col-2 col-form-label">名稱</label>
                                                             <div class="col-10">
-                                                                <input type="text" class="form-control" id="newFolderName" placeholder="資料夾名稱">
+                                                                <input type="text"
+                                                                       class="form-control"
+                                                                       id="newFolderName"
+                                                                       placeholder="資料夾名稱">
                                                             </div>
                                                             <div>
-                                                                <i href="javascript:void(0);" class="error-message" id="newFolderNameError"></i>
+                                                                <i href="javascript:void(0);"
+                                                                   class="error-message"
+                                                                   id="newFolderNameError"></i>
                                                             </div>
                                                         </div>
                                                         <div class="justify-content-end row">
                                                             <div class="col-12">
-                                                                <button type="button" class="btn btn-info" id="addNewFolder">新增</button>
-                                                                <button type="button" class="btn btn-secondary" id="cancelAddNewFolder">取消</button>
+                                                                <button type="button"
+                                                                        class="btn btn-info"
+                                                                        id="addNewFolder">新增
+                                                                </button>
+                                                                <button type="button"
+                                                                        class="btn btn-secondary"
+                                                                        id="cancelAddNewFolder">取消
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </form>
@@ -622,22 +634,34 @@
                                                     <h4>編輯檔案</h4>
                                                     <form class="form-horizontal">
                                                         <div class="row mb-3">
-                                                            <label for="editFileName" class="col-2 col-form-label">名稱</label>
+                                                            <label for="editFileName"
+                                                                   class="col-2 col-form-label">名稱</label>
                                                             <div class="col-10">
-                                                                <input type="text" class="form-control" id="editFileName" placeholder="檔案名稱">
-                                                                <input type="hidden" id="editFileId">
-                                                                <input type="hidden" id="isFolder">
-                                                                <input type="hidden" id="shareUsers">
+                                                                <input type="text"
+                                                                       class="form-control"
+                                                                       id="editFileName"
+                                                                       placeholder="檔案名稱"> <input type="hidden"
+                                                                                                      id="editFileId">
+                                                                <input type="hidden" id="isFolder"> <input type="hidden"
+                                                                                                           id="shareUsers">
                                                                 <input type="hidden" id="parentFolderId">
                                                             </div>
                                                             <div>
-                                                                <a href="javascript:void(0);" class="error-message" id="editFileNameError"></a>
+                                                                <a href="javascript:void(0);"
+                                                                   class="error-message"
+                                                                   id="editFileNameError"></a>
                                                             </div>
                                                         </div>
                                                         <div class="justify-content-end row">
                                                             <div class="col-12">
-                                                                <button type="button" class="btn btn-primary" id="saveEditFile">儲存</button>
-                                                                <button type="button" class="btn btn-secondary" id="cancelEditFile">取消</button>
+                                                                <button type="button"
+                                                                        class="btn btn-primary"
+                                                                        id="saveEditFile">儲存
+                                                                </button>
+                                                                <button type="button"
+                                                                        class="btn btn-secondary"
+                                                                        id="cancelEditFile">取消
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </form>
@@ -645,7 +669,8 @@
                                             </div>
                                             <!-- 移動檔案的模態框 -->
                                             <div id="moveFileModal" class="modal-overlay hidden">
-                                                <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                                                <div class="modal-content"
+                                                     style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
                                                     <h4>移動檔案/資料夾</h4>
                                                     <div id="moveFileContainer">
 
@@ -671,20 +696,17 @@
                                                    class="list-group-item border-0"><i class="mdi mdi-delete font-18 align-middle me-2"></i>已刪除 文件</a>
                                             </div>
 
-                                            <div class="mt-5">
+                                            <div class="mt-5" id="user-storage-status">
                                                 <h4>
-                                                    <span class="badge rounded-pill p-1 px-2 badge-secondary-lighten">免費</span>
+                                                    <span class="badge rounded-pill p-1 px-2 badge-secondary-lighten" id="user-storage-level"></span>
                                                 </h4>
                                                 <h6 class="text-uppercase mt-3">存儲空間</h6>
                                                 <div class="progress my-2 progress-sm">
-                                                    <div class="progress-bar progress-lg bg-success"
+                                                    <div class="progress-bar progress-lg"
                                                          role="progressbar"
-                                                         style="width: 46%"
-                                                         aria-valuenow="46"
-                                                         aria-valuemin="0"
-                                                         aria-valuemax="100"></div>
+                                                         style="width: 0"></div>
                                                 </div>
-                                                <p class="text-muted font-12 mb-0">7.02 GB (46%) / 15 GB 已使用</p>
+                                                <p class="text-muted font-12 mb-0"></p>
                                             </div>
 
                                         </div>

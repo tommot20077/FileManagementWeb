@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>檔案預覽</title>
+        <style>
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: #1a1a1a;
+                margin: 0;
+            }
+            .preview-container {
+                width: 90vw;
+                height: 90vh;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 10px;
+                overflow: hidden;
+            }
+            img, video, iframe {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="preview-container" id="previewContainer">
+            <p>載入中...</p>
+        </div>
+
+    </body>
+</html>
+
+<script type="module" src="preview-main.js"></script>

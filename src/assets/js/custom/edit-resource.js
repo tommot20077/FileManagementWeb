@@ -88,7 +88,7 @@ document.getElementById("saveEditFile").addEventListener('click', async () => {
             document.getElementById('editFileId').value = '';
             document.getElementById("isFolder").value = '';
             document.getElementById("editFileModal").classList.add("hidden");
-            await fetchFileList(currentFolderId); // 刷新檔案列表
+            await fetchFileList(currentFolderId);
         } else {
             // 後端返回錯誤狀態
             errorContainer.textContent = response.data.message || '編輯檔案失敗。';

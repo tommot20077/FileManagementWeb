@@ -76,14 +76,14 @@ class FolderTree {
 
 
         folders.forEach((folder) => {
-            if (!folder.filename || !folder.folder) {
+            if (!folder.filename || !folder.folder || folder.id === this.file.id) {
                 return;
             }
 
             const li = document.createElement('li');
             li.className = 'side-nav-item folder-item';
             li.innerHTML = `
-                <a href="#" class="side-nav-link ${folder.id === this.selectedFolderId ? 'active' : ''}">
+                <a href="#" class="side-nav-link">
                     <i class="uil-folder-plus"></i>
                     <span>${folder.filename}</span>
                 </a>

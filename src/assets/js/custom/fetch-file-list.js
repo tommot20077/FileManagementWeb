@@ -3,6 +3,8 @@ import {formatFileSize} from "./tool.js";
 import config from "../../../../config.js";
 import {openEditFileModal} from "./edit-resource.js";
 import {openMoveFileModal} from "./folder-tree.js";
+import streamSaver from 'streamsaver';
+import {getUserInfo} from "./user-info.js";
 
 export let currentFolderId = 0;
 const breadcrumb = document.getElementById('breadcrumb');
@@ -153,7 +155,7 @@ export async function fetchFileList(folderId = 0) {
                 } else if (action.text === '下載') {
                     actionItem.addEventListener('click', async (e) => {
                         e.preventDefault();
-                        await getFileResource(file.id,'download');
+                        await getFileResource(file.id, 'download');
                     });
                 } else if (action.text === '移除') {
                     actionItem.addEventListener('click', async (e) => {
@@ -190,37 +192,52 @@ export async function fetchFileList(folderId = 0) {
 
 async function getFileResource(fileId, action) {
     try {
-        const previewResponse = await fetch(`${config.apiUrl}/api/files/${fileId}?action=${action}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${config.jwt}`
-            }
-        });
-        if (previewResponse.ok) {
-            const blob = await previewResponse.blob();
-            const url = URL.createObjectURL(blob);
-            if (action === 'preview') {
-                window.open(url, '_blank');
-            } else {
-                const a = document.createElement('a');
-                a.href = url;
-                const contentDisposition = previewResponse.headers.get('Content-Disposition');
-                let fileName = 'file';
-                if (contentDisposition && contentDisposition.includes('filename=')) {
-                    fileName = contentDisposition.split('filename=')[1].replace(/"/g, '');
-                }
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
-            }
+        if (action === "preview") {
+            window.open(`/preview?id=${fileId}`, '_blank');
         } else {
-            console.error('下載失敗');
+            const response = await fetch(`${config.apiUrl}/api/files/${fileId}?action=download`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${config.jwt}`
+                }
+            });
+
+            if (!response.ok) {
+                new Error('下載失敗');
+            }
+
+            const filename = getFilenameFromHeaders(response.headers);
+            const fileStream = streamSaver.createWriteStream(filename, {
+                size: response.headers.get('Content-Length')
+            })
+
+            const readableStream = response.body;
+            if (window.WritableStream && readableStream.pipeTo) {
+                return readableStream.pipeTo(fileStream).then(() => {
+                })
+            }
+            window.writer = fileStream.getWriter();
+            const reader = response.body.getReader();
+            const pump = () => reader.read().then(res => res.done ?
+                window.writer.close() : window.writer.write(res.value).then(pump))
+            await pump();
         }
     } catch (error) {
-        console.error('錯誤:', error);
+        console.error('下載錯誤:', error);
     }
+}
+
+
+function getFilenameFromHeaders(headers) {
+    const contentDisposition = headers.get('Content-Disposition');
+    if (contentDisposition) {
+        const filenameMatch =
+            contentDisposition.match(/filename\*=UTF-8''([^;]+)/i) ||
+            contentDisposition.match(/filename="?(.+)"?/i);
+
+        return filenameMatch ? decodeURIComponent(filenameMatch[1]) : 'download';
+    }
+    return 'download';
 }
 
 async function deleteFile(fileId, isFolder) {
@@ -229,8 +246,9 @@ async function deleteFile(fileId, isFolder) {
             const status = response.data.status;
             if (status === 200) {
                 fetchFileList(currentFolderId).then();
+                getUserInfo(true);
             }
-        } ).catch(error => {
+        }).catch(error => {
             console.error(error);
         });
     } else {
@@ -238,6 +256,7 @@ async function deleteFile(fileId, isFolder) {
             const status = response.data.status;
             if (status === 200) {
                 fetchFileList(currentFolderId).then();
+                getUserInfo(true);
             }
         }).catch(error => {
             console.error(error);
@@ -247,7 +266,6 @@ async function deleteFile(fileId, isFolder) {
 
 function updateBreadcrumb(filePaths) {
     breadcrumb.innerHTML = '';
-
     filePaths.reverse().forEach((folder, index) => {
         const breadcrumbItem = document.createElement('li');
         breadcrumbItem.classList.add('breadcrumb-item');
@@ -273,4 +291,5 @@ function updateBreadcrumb(filePaths) {
         breadcrumb.appendChild(breadcrumbItem);
     });
 }
+
 export default {fetchFileList, currentFolderId};

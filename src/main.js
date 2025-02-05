@@ -6,11 +6,12 @@ import { formatFileSize } from './assets/js/custom/tool.js';
 import uploadContainer from './assets/js/custom/upload-container.js';
 import uploadManager from './assets/js/custom/upload-manager.js';
 import { WSConnector } from './assets/js/custom/ws-connectoer.js';
+import {getUserInfo} from "./assets/js/custom/user-info.js";
 
-// 初始化模組（根據需要調整）
+
 document.addEventListener('DOMContentLoaded', () => {
-    // 例如初始化文件列表
-    fetchFileListModule.fetchFileList().then(r => {});
-
-    // 其他初始化操作
+    const urlParams = new URLSearchParams(window.location.search);
+    const folderId = urlParams.get('id') || 0;
+    fetchFileListModule.fetchFileList(folderId).then(r => {});
+    getUserInfo();
 });

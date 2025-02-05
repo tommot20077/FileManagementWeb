@@ -5,6 +5,7 @@ import uploadManager from "./upload-manager.js";
 
 import ChunkUploadManager from "./chunk-upload-manager.js";
 import {fetchFileList, currentFolderId} from "./fetch-file-list.js";
+import {getUserInfo} from "./user-info.js";
 
 // 禁用 Dropzone 的自動發起請求
 Dropzone.autoDiscover = false;
@@ -298,6 +299,7 @@ document.getElementById('closeModal').addEventListener('click', () => {
     document.body.classList.remove('no-scroll');
     toggleUploadButtons(false);
     fetchFileList(currentFolderId).then();
+    getUserInfo(true);
 });
 
 export default {};
