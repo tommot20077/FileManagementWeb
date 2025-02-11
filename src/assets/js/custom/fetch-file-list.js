@@ -14,7 +14,7 @@ export async function fetchFileList(folderId = 0) {
     let response;
     try {
         response = await apiConnector.get(`/api/folders/${folderId}`);
-        const files = response.data.data.files;
+        const files = response.data.data.files.data;
         const tbody = document.querySelector('.table-responsive tbody');
         const username = response.data.data.username;
         const userId = response.data.data.userId;

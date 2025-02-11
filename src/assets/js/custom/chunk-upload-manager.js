@@ -86,10 +86,11 @@ class ChunkUploadManager {
                 this.currentConcurrent--;
                 this.processQueue();
             } else if (response.message.includes("分塊上傳失敗")) {
-                const chunkIndex = response.data.chunkIndex;
+                const chunkIndex = response.data.chunkIndex != null ? response.data.chunkIndex : 0;
                 this.handleChunkError(chunkIndex, new Error(response.data.message));
             } else {
-                this.onError(new Error("未知消息: " + response.message));
+                this.onProgress(0, 'failed', `連線失敗: ${response.message}`);
+                this.onError(new Error(response.message));
                 this.file.uploadStatus = 'failed';
                 this.ws.close();
             }
@@ -213,7 +214,6 @@ class ChunkUploadManager {
                         chunkIndex: chunkIndex,
                         chunkData: base64String,
                         totalChunks: this.totalChunks,
-                        md5: currentChunkMd5,
                     },
                 };
 

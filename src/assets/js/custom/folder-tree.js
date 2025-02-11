@@ -46,7 +46,7 @@ class FolderTree {
     async generateFolderList(folderId, parentElement) {
         parentElement.innerHTML = '';
         const folderData = await this.getData(folderId);
-        const folders = folderData.files;
+        const folders = folderData.files.data;
         this.currentFolders = folderData.filePaths
 
         if (folderId !== 0) {
