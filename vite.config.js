@@ -1,21 +1,20 @@
-import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import {defineConfig} from 'vite';
+import {resolve} from 'path';
 import config from "./config.js";
 
 export default defineConfig({
     root: 'src',
     server: {
         allowedHosts: config.prod ? config.allowHost : ['localhost'],
-        rewrite: {
+        rewrite: [{
             from: /^\/preview$/,
             to: '/preview.html'
-        },
+        }, {
+            from: /^\/editor$/,
+            to: '/editor.html'
+        }],
         proxy: {
             '/api': {
-                target: config.apiUrl,
-                changeOrigin: true,
-            },
-            '/web': {
                 target: config.apiUrl,
                 changeOrigin: true,
             },

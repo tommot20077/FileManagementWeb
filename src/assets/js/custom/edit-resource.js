@@ -100,12 +100,44 @@ document.getElementById("saveEditFile").addEventListener('click', async () => {
 });
 
 // 取消編輯檔案
-document.getElementById("cancelEditFile").addEventListener('click', () => {
+document.getElementById("cancelEditFile").addEventListener('click', (e) => {
+    e.preventDefault();
     document.getElementById('editFileName').value = '';
     document.getElementById('editFileId').value = '';
     document.getElementById("editFileModal").classList.add("hidden");
     document.getElementById('editFileNameError').textContent = '';
 });
+
+
+document.getElementById("addNewOnlineDocument").addEventListener('click', () => {
+    const name = document.getElementById('newOnlineDocumentName').value.trim();
+    if (!name) {
+        $.NotificationApp.send("檔案名稱不能為空","","bottom-right","rgba(0,0,0,0.2)","warning");
+        return;
+    }
+
+
+    apiConnector.post('/api/docs/upload', {
+        fileName:  name,
+        parentFolderId: currentFolderId === 0 ? null : currentFolderId,
+    }).then(response => {
+        if (response.data.status === 200) {
+
+            $.NotificationApp.send("檔案建立成功","","bottom-right","rgba(0,0,0,0.2)","success");
+            setTimeout(() => {
+                $('#add-online-document-modal').modal('hide');
+            }, 1000);
+            fetchFileList(currentFolderId).then();
+            return;
+        }
+        throw new Error(response.data.message || '新增檔案失敗。');
+    }).catch(error => {
+        console.error(error);
+        $.NotificationApp.send(`檔案建立失敗: ${error}`,"","bottom-right","rgba(0,0,0,0.2)","error");
+    });
+});
+
+
 
 
 export default {openEditFileModal};

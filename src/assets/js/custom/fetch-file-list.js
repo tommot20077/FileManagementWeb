@@ -1,5 +1,5 @@
 import apiConnector from "./api-connector.js";
-import {formatFileSize} from "./tool.js";
+import {formatFileSize, updatePaginationControls} from "./tool.js";
 import config from "../../../../config.js";
 import {openEditFileModal} from "./edit-resource.js";
 import {openMoveFileModal} from "./folder-tree.js";
@@ -9,16 +9,35 @@ import {getUserInfo} from "./user-info.js";
 export let currentFolderId = 0;
 const breadcrumb = document.getElementById('breadcrumb');
 
-export async function fetchFileList(folderId = 0) {
+export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pageSize, type) {
     currentFolderId = folderId;
     let response;
     try {
-        response = await apiConnector.get(`/api/folders/${folderId}`);
+        let url = `/api/folders/${folderId}`
+        let params = "?";
+
+        if (pageSize) {
+            params += `&size=${pageSize}`;
+        }
+
+        if (type) {
+            params += `&type=${type}`;
+        }
+        if (page) {
+            params += `&page=${page}`;
+        }
+        if (params !== "?") {
+            params = params.replace("?&", "?");
+            url += params;
+        }
+        response = await apiConnector.get(url);
         const files = response.data.data.files.data;
         const tbody = document.querySelector('.table-responsive tbody');
         const username = response.data.data.username;
         const userId = response.data.data.userId;
         const filePaths = response.data.data.filePaths;
+        const totalPages = response.data.data.files.totalPages;
+        const currentPage = response.data.data.files.currentPage;
 
         updateBreadcrumb(filePaths);
 
@@ -46,7 +65,10 @@ export async function fetchFileList(folderId = 0) {
                 e.preventDefault();
                 if (file.folder) {
                     await fetchFileList(file.id);
-                } else {
+                } else if (file.fileType === 'ONLINE_DOCUMENT') {
+                    await openEditor(file);
+                }
+                else {
                     await getFileResource(file.id, 'preview');
                 }
             });
@@ -132,9 +154,14 @@ export async function fetchFileList(folderId = 0) {
             ];
 
             actions.forEach(action => {
-                if (file.folder && action.text === '預覽') {
+                if (file.folder && (action.text === '預覽' || action.text === '下載')) {
                     return;
                 }
+                if (file.fileType === 'ONLINE_DOCUMENT' && action.text === '下載') {
+                    return;
+                }
+
+
                 const actionItem = document.createElement('a');
                 actionItem.href = '#';
                 actionItem.classList.add('dropdown-item', 'notify-item');
@@ -150,7 +177,11 @@ export async function fetchFileList(folderId = 0) {
                 if (action.text === '預覽') {
                     actionItem.addEventListener('click', async (e) => {
                         e.preventDefault();
-                        await getFileResource(file.id, 'preview');
+                        if (file.fileType === 'ONLINE_DOCUMENT') {
+                            await openEditor(file);
+                        } else {
+                            await getFileResource(file.id, 'preview');
+                        }
                     });
                 } else if (action.text === '下載') {
                     actionItem.addEventListener('click', async (e) => {
@@ -185,10 +216,36 @@ export async function fetchFileList(folderId = 0) {
             tbody.appendChild(tr);
         });
 
+        updatePaginationControls(currentPage, totalPages, pageSize, type);
+
+        if (updateUrl) {
+            let newUrl = `/web/folder/${folderId}`;
+            let paramsName = {}
+
+            if (params !== "?") {
+                newUrl += params;
+            }
+
+            if (type) {
+                paramsName.type = type;
+            }
+            if (pageSize) {
+                paramsName.size = pageSize;
+            }
+            if (page) {
+                paramsName.page = page;
+            }
+            window.history.pushState(paramsName, '', newUrl);
+        }
     } catch (e) {
         console.error(e);
     }
 }
+async function openEditor(file) {
+    window.name = JSON.stringify(file);
+    window.location.href = `/editor?id=${file.id}`;
+}
+
 
 async function getFileResource(fileId, action) {
     try {

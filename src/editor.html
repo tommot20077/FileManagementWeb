@@ -14,12 +14,14 @@
         <link href="assets/css/vendor/jquery-jvectormap-1.2.2.css" rel="stylesheet" type="text/css"/>
         <!-- third party css end -->
 
-        <link href="assets/css/custom/upload-container.css" rel="stylesheet">
-        <link href="assets/css/custom/container.css" rel="stylesheet">
-
         <!-- App css -->
         <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css"/>
         <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" id="app-style"/>
+
+        <!-- Quill css -->
+        <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet"/>
+        <link href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark-reasonable.css" rel="stylesheet"/>
+        <link href="assets/css/custom/editor.css" rel="stylesheet"/>
 
 
     </head>
@@ -447,335 +449,114 @@
                             <div class="col-12">
                                 <div class="page-title-box">
                                     <div class="page-title-right">
-                                        <ol class="breadcrumb m-0" id="breadcrumb"></ol>
+                                        <div class="dropdown">
+                                            <div class="btn-group">
+                                                <button id='update-btn' type="button" class="btn btn-info">更新</button>
+                                                <button type="button"
+                                                        class="btn btn-info dropdown-toggle dropdown-toggle-split"
+                                                        data-bs-toggle="dropdown"
+                                                        aria-haspopup="true"
+                                                        aria-expanded="false"></button>
+                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                    <a class="dropdown-item"
+                                                       href="#historyList"
+                                                       id='getHistoryListButton'
+                                                       data-bs-toggle="offcanvas"
+                                                       aria-controls="historyList">查看歷程版本</a> <a class="dropdown-item"
+                                                                                                       data-bs-toggle="modal"
+                                                                                                       href="#buildNewHistorytoggle">建立歷程版本</a>
+                                                </div>
+
+                                                <div class="modal fade"
+                                                     id="buildNewHistorytoggle"
+                                                     aria-hidden="true"
+                                                     aria-labelledby="exampleModalToggleLabel"
+                                                     tabindex="-1">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">建立</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body" id='buildNewHistoryContent'>
+                                                                <form class="ps-3 pe-3 form-horizontal">
+                                                                    <div class="row mb-3">
+                                                                        <label for="NewHistoryNote" class="col-3 col-form-label">備註</label>
+                                                                        <div class="col-9">
+                                                                            <input class="form-control" type="text" id="NewHistoryNote" placeholder="關於此版本的備註...">
+                                                                        </div>
+                                                                    </div>
+                                                                </form>
+                                                                <div class="modal-footer">
+                                                                    <button class="btn btn-primary" id='checkBuildHistoryBottom'>確認
+                                                                    </button>
+                                                                    <button class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                                                </div>
+                                                            </div>
+                                                        </div><!-- /.modal-content -->
+                                                    </div><!-- /.modal-dialog -->
+                                                </div><!-- /.modal -->
+
+
+                                                <div class="offcanvas offcanvas-start" tabindex="-1" id="historyList" aria-labelledby="historyListLabel">
+                                                    <div class="offcanvas-header">
+                                                        <h5 class="offcanvas-title" id="historyListLabel">歷程記錄列表</h5>
+                                                        <button type="button"
+                                                                class="btn-close text-reset"
+                                                                data-bs-dismiss="offcanvas"
+                                                                aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="offcanvas-body">
+                                                        <div>
+                                                            用戶檔案的歷程記錄列表，可以查看歷史版本，並還原到指定版本，當版本還原時，會自動為當前版本建立一個新的歷程記錄。
+                                                        </div>
+                                                        <br>
+                                                        <i class='text-warning'>請注意：每個檔案可以新建最多50個檔案歷程，超過50個歷程將自動刪除最早的歷程。</i>
+
+                                                        <h5 class="mt-3">歷程記錄</h5>
+                                                        <div class="accordion" id="userHistoryList"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button style='margin-left: 10px' id="back-btn" class="btn btn-secondary">返回</button>
+                                        </div>
+
+                                        <div class="modal fade"
+                                             id="checkRevertToggle"
+                                             aria-hidden="true"
+                                             aria-labelledby="exampleModalToggleLabel"
+                                             tabindex="-1">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="checkRevertModel">警告</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body" id='checkRevertContent'>
+                                                        確認是否還原到此版本？
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button class="btn btn-primary" id='checkRevertButton'>確認</button>
+                                                        <button class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                                    </div>
+                                                </div><!-- /.modal-content -->
+                                            </div><!-- /.modal-dialog -->
+                                        </div><!-- /.modal -->
                                     </div>
-                                    <h4 class="page-title">文件管理器</h4>
+                                    <div class='page-title-left'>
+                                        <h4 class="page-title">線上文件編輯器</h4>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <!-- end page title -->
 
                         <div class="row">
-
-                            <!-- 右側邊欄 -->
                             <div class="col-12">
                                 <div class="card">
-                                    <div class="card-body">
-                                        <!-- 左側邊欄 -->
-                                        <div class="page-aside-left">
-
-                                            <div class="btn-group d-block mb-2">
-                                                <button type="button"
-                                                        class="btn btn-success dropdown-toggle w-100"
-                                                        data-bs-toggle="dropdown"
-                                                        aria-haspopup="true"
-                                                        aria-expanded="false"><i class="mdi mdi-plus"></i> 新建
-                                                </button>
-                                                <div class="dropdown-menu">
-                                                    <button class="dropdown-item" id="add-new-folder">
-                                                        <i class="mdi mdi-folder-plus-outline me-1"></i> 文件夾
-                                                    </button>
-                                                    <button type="button"
-                                                            class="dropdown-item"
-                                                            data-bs-target="#add-online-document-modal"
-                                                            data-bs-toggle="modal">
-                                                        <i class="mdi mdi-file-plus-outline me-1"></i> 文件
-                                                    </button>
-                                                    <button class="dropdown-item" id="upload-new-file">
-                                                        <i class="mdi mdi-upload me-1"></i> 選擇文件
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <div id="addFolderModal" class="modal-overlay hidden">
-                                                <div class="modal-content" style="max-width: 600px">
-                                                    <h4>新增資料夾</h4>
-                                                    <form class="form-horizontal">
-                                                        <div class="row mb-3">
-                                                            <label for="newFolderName" class="col-2 col-form-label">名稱</label>
-                                                            <div class="col-10">
-                                                                <input type="text" class="form-control" id="newFolderName" placeholder="資料夾名稱">
-                                                            </div>
-                                                            <div>
-                                                                <i href="javascript:void(0);" class="error-message" id="newFolderNameError"></i>
-                                                            </div>
-                                                        </div>
-                                                        <div class="justify-content-end row">
-                                                            <div class="col-12">
-                                                                <button type="button" class="btn btn-info" id="addNewFolder">新增
-                                                                </button>
-                                                                <button type="button" class="btn btn-secondary" id="cancelAddNewFolder">取消
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-
-
-                                            <div id="add-online-document-modal"
-                                                 class="modal fade"
-                                                 tabindex="-1"
-                                                 role="dialog"
-                                                 aria-labelledby="add-online-document-modalLabel"
-                                                 aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h4 class="modal-title" id="add-online-document-modalLabel">新建線上檔案</h4>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <form class="form-horizontal">
-                                                                <div class="row mb-3">
-                                                                    <label for="newOnlineDocumentName" class="col-3 col-form-label">檔案名稱</label>
-                                                                    <div class="col-9">
-                                                                        <input type="text"
-                                                                               class="form-control"
-                                                                               id="newOnlineDocumentName"
-                                                                               placeholder="名稱...">
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消
-                                                                    </button>
-                                                                    <button type="button" class="btn btn-primary" id="addNewOnlineDocument">建立
-                                                                    </button>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-
-                                            <div id="uploadModal" class="modal-overlay hidden">
-                                                <div class="modal-content">
-                                                    <h4>上傳文件</h4>
-                                                    <!-- File Upload Form -->
-                                                    <form action="/" method="post" class="dropzone" id="dropzone">
-                                                        <div class="fallback">
-                                                            <input name="file" type="file" multiple/>
-                                                        </div>
-
-                                                        <div class="dz-message needsclick">
-                                                            <i class="h1 text-muted dripicons-cloud-upload"></i>
-                                                            <h3>拖放文件到此處或點擊上傳。</h3>
-                                                        </div>
-                                                    </form>
-
-                                                    <!-- Preview -->
-                                                    <div class="dropzone-previews mt-3" id="file-previews"></div>
-
-                                                    <!-- File Preview Template -->
-                                                    <div class="d-none" id="uploadPreviewTemplate">
-                                                        <div class="card mt-1 mb-0 shadow-none border">
-                                                            <div class="p-2">
-                                                                <div class="row align-items-center">
-                                                                    <div class="col-auto">
-                                                                        <img data-dz-thumbnail
-                                                                             src="#"
-                                                                             class="avatar-sm rounded bg-light"
-                                                                             alt=""
-                                                                             style="display: none;"> <i class="mdi mdi-file"
-                                                                                                        data-dz-file-icon
-                                                                                                        style="font-size: 2em;"></i>
-                                                                    </div>
-                                                                    <div class="col ps-0">
-                                                                        <a href="javascript:void(0);" class="text-muted fw-bold" data-dz-name></a>
-                                                                        <p class="mb-0" data-dz-size></p>
-                                                                    </div>
-                                                                    <div class="col-auto">
-                                                                        <!-- 按鈕 -->
-                                                                        <a href="" class="btn btn-link btn-lg text-muted" data-dz-remove>
-                                                                            <i class="dripicons-cross"></i> </a>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="upload-progress-container mt-2">
-                                                                    <div class="upload-progress-bar"></div>
-                                                                    <div class="status-text">等待上傳</div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="mt-3">
-                                                        <button id="submitUpload" class="btn btn-primary" disabled>上傳（HTTP）
-                                                        </button>
-                                                        <button id="submitUploadWs" class="btn btn-primary" disabled>開始上傳（WebSocket）
-                                                        </button>
-                                                        <button id="closeModal" class="btn btn-secondary">關閉</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div id="editFileModal" class="modal-overlay hidden">
-                                                <div class="modal-content" style="max-width: 600px">
-                                                    <h4>編輯檔案</h4>
-                                                    <form class="form-horizontal">
-                                                        <div class="row mb-3">
-                                                            <label for="editFileName" class="col-2 col-form-label">名稱</label>
-                                                            <div class="col-10">
-                                                                <input type="text" class="form-control" id="editFileName" placeholder="檔案名稱">
-                                                                <input type="hidden" id="editFileId"> <input type="hidden" id="isFolder"> <input type="hidden"
-                                                                                                                                                 id="shareUsers">
-                                                                <input type="hidden" id="parentFolderId">
-                                                            </div>
-                                                            <div>
-                                                                <a href="javascript:void(0);" class="error-message" id="editFileNameError"></a>
-                                                            </div>
-                                                        </div>
-                                                        <div class="justify-content-end row">
-                                                            <div class="col-12">
-                                                                <button type="button" class="btn btn-primary" id="saveEditFile">儲存
-                                                                </button>
-                                                                <button type="button" class="btn btn-secondary" id="cancelEditFile">取消
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                            <!-- 移動檔案的模態框 -->
-                                            <div id="moveFileModal" class="modal-overlay hidden">
-                                                <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
-                                                    <h4>移動檔案/資料夾</h4>
-                                                    <div id="moveFileContainer">
-
-                                                    </div>
-                                                </div>
-                                            </div>
-
-
-                                            <div class="email-menu-list mt-3">
-                                                <a href="#"
-                                                   class="list-group-item border-0"><i class="mdi mdi-folder-outline font-18 align-middle me-2"></i>我的 文件</a>
-                                                <a href="#"
-                                                   class="list-group-item border-0"><i class="mdi mdi-google-drive font-18 align-middle me-2"></i>Google Drive</a>
-                                                <a href="#"
-                                                   class="list-group-item border-0"><i class="mdi mdi-dropbox font-18 align-middle me-2"></i>Dropbox</a>
-                                                <a href="#"
-                                                   class="list-group-item border-0"><i class="mdi mdi-share-variant font-18 align-middle me-2"></i>與 我分享</a>
-                                                <a href="#" class="list-group-item border-0"><i class="mdi mdi-clock-outline font-18 align-middle me-2"></i>最近</a>
-                                                <a href="#" class="list-group-item border-0"><i class="mdi mdi-star-outline font-18 align-middle me-2"></i>加星標</a>
-                                                <a href="#" class="list-group-item border-0"><i class="mdi mdi-delete font-18 align-middle me-2"></i>已刪除 文件</a>
-                                            </div>
-
-                                            <div class="mt-5" id="user-storage-status">
-                                                <h4>
-                                                    <span class="badge rounded-pill p-1 px-2 badge-secondary-lighten" id="user-storage-level"></span>
-                                                </h4>
-                                                <h6 class="text-uppercase mt-3">存儲空間</h6>
-                                                <div class="progress my-2 progress-sm">
-                                                    <div class="progress-bar progress-lg" role="progressbar" style="width: 0"></div>
-                                                </div>
-                                                <p class="text-muted font-12 mb-0"></p>
-                                            </div>
-
-                                        </div>
-                                        <!-- 結束 左側邊欄 -->
-
-                                        <div class="page-aside-right">
-
-                                            <div class="d-lg-flex justify-content-between align-items-center">
-                                                <div class="app-search">
-                                                    <form>
-                                                        <div class="mb-2 position-relative">
-                                                            <input type="text" class="form-control" placeholder="搜尋文件...">
-                                                            <span class="mdi mdi-magnify search-icon"></span>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                                <div>
-                                                    <button type="submit" class="btn btn-sm btn-light">
-                                                        <i class="mdi mdi-format-list-bulleted"></i></button>
-                                                    <button type="submit" class="btn btn-sm">
-                                                        <i class="mdi mdi-view-grid"></i></button>
-                                                    <button type="submit" class="btn btn-sm">
-                                                        <i class="mdi mdi-information-outline"></i></button>
-                                                </div>
-                                            </div>
-
-                                            <div class="mt-3">
-                                                <h5 class="mb-2">快速訪問</h5>
-
-                                                <div class="row mx-n1 g-0">
-                                                    <div class="col-xxl-3 col-lg-6">
-                                                        <div class="card m-1 shadow-none border">
-                                                            <div class="p-2">
-                                                                <div class="row align-items-center">
-                                                                    <div class="col-auto">
-                                                                        <div class="avatar-sm">
-                                                                <span class="avatar-title bg-light text-secondary rounded">
-                                                                    <i class="mdi mdi-folder-zip font-16"></i>
-                                                                </span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col ps-0">
-                                                                        <a href="javascript:void(0);" class="text-muted fw-bold">Hyper-sketch.zip</a>
-                                                                        <p class="mb-0 font-13">2.3 MB</p>
-                                                                    </div>
-                                                                </div> <!-- end row -->
-                                                            </div> <!-- end .p-2-->
-                                                        </div> <!-- end col -->
-                                                    </div> <!-- end col-->
-
-                                                    <div class="col-xxl-3 col-lg-6">
-                                                        <div class="card m-1 shadow-none border">
-                                                            <div class="p-2">
-                                                                <div class="row align-items-center">
-                                                                    <div class="col-auto">
-                                                                        <div class="avatar-sm">
-                                                                <span class="avatar-title bg-light text-secondary rounded">
-                                                                    <i class="mdi mdi-folder font-16"></i>
-                                                                </span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col ps-0">
-                                                                        <a href="javascript:void(0);" class="text-muted fw-bold">編譯版本</a>
-                                                                        <p class="mb-0 font-13">87.2 MB</p>
-                                                                    </div>
-                                                                </div> <!-- end row -->
-                                                            </div> <!-- end .p-2-->
-                                                        </div> <!-- end col -->
-                                                    </div> <!-- end col-->
-                                                </div> <!-- end row-->
-                                            </div> <!-- end .mt-3-->
-
-
-                                            <div class="mt-3">
-                                                <h5 class="mb-3">最近</h5>
-
-                                                <div class="table-responsive">
-                                                    <table class="table table-centered table-nowrap mb-0">
-                                                        <thead class="table-light">
-                                                            <tr>
-                                                                <th class="border-0">名稱</th>
-                                                                <th class="border-0">最後修改</th>
-                                                                <th class="border-0">大小</th>
-                                                                <th class="border-0">擁有者</th>
-                                                                <th class="border-0">共享成員</th>
-                                                                <th class="border-0" style="width: 80px;">操作</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody></tbody>
-                                                    </table>
-                                                    <nav>
-                                                        <ul class="pagination pagination-rounded mb-0 justify-content-center"></ul>
-                                                    </nav>
-                                                </div>
-
-                                            </div> <!-- end .mt-3-->
-
-                                        </div>
-                                        <!-- 結束 收件箱右側欄-->
-                                    </div>
-                                    <!-- end card-body -->
-                                    <div class="clearfix"></div>
-                                </div> <!-- end card-box -->
-
-                            </div> <!-- end Col -->
+                                    <div id="editor" class='data-simplebar data-simplebar-lg'></div>
+                                </div>
+                            </div>
                         </div><!-- 結束 row -->
 
                     </div> <!-- container -->
@@ -902,25 +683,10 @@
         <script src="assets/js/vendor.min.js"></script>
         <script src="assets/js/app.min.js"></script>
 
-        <!-- plugin js -->
-        <script src="assets/js/vendor/dropzone.min.js"></script>
-        <!-- init js -->
-        <script src="assets/js/ui/component.fileupload.js"></script>
-
-
         <!-- 自定義腳本 -->
-        <script type="module" src="main.js"></script>
+        <!-- quill js -->
+        <script type="module" src="editor-main.js"></script>
 
-
-        <!-- third party js -->
-        <script src="assets/js/vendor/apexcharts.min.js"></script>
-        <script src="assets/js/vendor/jquery-jvectormap-1.2.2.min.js"></script>
-        <script src="assets/js/vendor/jquery-jvectormap-world-mill-en.js"></script>
-        <!-- third party js ends -->
-
-        <!-- demo app -->
-        <!--<script src="assets/js/pages/demo.dashboard.js"></script>-->
-        <!-- end demo js-->
     </body>
 
     <!-- Mirrored from coderthemes.com/hyper/saas/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 29 Jul 2022 10:20:07 GMT -->

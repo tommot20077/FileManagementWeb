@@ -1,5 +1,6 @@
 import apiConnector from "./api-connector.js";
-import {fetchFileList} from "./fetch-file-list.js";
+import {currentFolderId, fetchFileList} from "./fetch-file-list.js";
+import {updatePaginationControls} from "./tool.js";
 
 class FolderTree {
     constructor(file) {
@@ -33,21 +34,32 @@ class FolderTree {
         this.addActionButtons();
 
     }
-    async getData(folderId) {
-        if (this.folderCache[folderId]) {
-            return this.folderCache[folderId];
+
+    async getData(folderId, page = 1) {
+        const cacheKey = `${folderId}-${page}`;
+
+        if (this.folderCache[cacheKey]) {
+            return this.folderCache[cacheKey];
         }
 
-        const response = await apiConnector.get(`/api/folders/${folderId}`);
-        this.folderCache[folderId] = response.data.data;
+        const response = await apiConnector.get(`/api/folders/${folderId}?page=${page}`);
+        this.folderCache[cacheKey] = response.data.data;
         return response.data.data;
     }
 
+
     async generateFolderList(folderId, parentElement) {
         parentElement.innerHTML = '';
-        const folderData = await this.getData(folderId);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        let currentPage = parseInt(urlParams.get("page")) || 1;
+
+
+        const folderData = await this.getData(folderId, currentPage);
         const folders = folderData.files.data;
+        const totalPages = folderData.files.totalPages;
         this.currentFolders = folderData.filePaths
+
 
         if (folderId !== 0) {
             const backLi = document.createElement('li');
@@ -74,9 +86,8 @@ class FolderTree {
             this.selectedFolderId = folderId === 0 ? null : folderId;
         }
 
-
         folders.forEach((folder) => {
-            if (!folder.filename || !folder.folder || folder.id === this.file.id) {
+            if (!folder.filename || !folder.folder || folder.id === this.file.id || folder.id === this.file.parentFolderId) {
                 return;
             }
 
@@ -98,6 +109,21 @@ class FolderTree {
 
             parentElement.appendChild(li);
         });
+        await this.createPaginationControls(parentElement).then((paginationUl) => {
+            let showPage = totalPages === 0 ? 1 : totalPages
+            updatePaginationControls(currentPage, showPage, null, null, paginationUl);
+        });
+    }
+
+    async createPaginationControls(parentElement) {
+        const paginationContainer = document.createElement('nav');
+        const paginationUl = document.createElement('ul');
+        paginationUl.className = 'pagination pagination-sm pagination-rounded mb-0 justify-content-center';
+
+
+        paginationContainer.appendChild(paginationUl);
+        parentElement.appendChild(paginationContainer);
+        return paginationUl
     }
 
     async loadFolder(folderId) {
@@ -194,7 +220,7 @@ class FolderTree {
         });
 
         cancelButton.addEventListener('click', () => {
-            closeMoveFileModal();
+            closeMoveFileModal(false);
         });
     }
 }
@@ -205,11 +231,13 @@ export function openMoveFileModal(file) {
     document.getElementById('moveFileModal').classList.remove("hidden");
 }
 
-function closeMoveFileModal() {
+function closeMoveFileModal(reset = true) {
     document.getElementById('moveFileModal').classList.add("hidden");
     document.getElementById('moveFileContainer').innerHTML = '';
-    fetchFileList().then(() => {
-    });
+    if (reset) {
+        fetchFileList(currentFolderId).then(() => {
+        });
+    }
 }
 
 
