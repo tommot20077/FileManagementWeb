@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    
+<!-- Mirrored from coderthemes.com/hyper/saas/pages-login-2.html by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 29 Jul 2022 10:21:16 GMT -->
+<head>
+        <meta charset="utf-8" />
+        <title>登入</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta content="一個檔案管理綜合平台，提供用戶管理檔案" name="description" />
+        <meta content="Coderthemes" name="author" />
+        <!-- App favicon -->
+        <link rel="shortcut icon" href="assets/images/favicon.ico">
+
+        <!-- App css -->
+        <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+        <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" id="app-style"/>
+
+    </head>
+
+    <body class="authentication-bg pb-0" data-layout-config='{"darkMode":false}'>
+        <div class="auth-fluid">
+            <!--Auth fluid left content -->
+            <div class="auth-fluid-form-box">
+                <div class="align-items-center d-flex h-100">
+                    <div class="card-body">
+
+                        <!-- Logo -->
+                        <div class="auth-brand text-center text-lg-start">
+                            <a href="index.html" class="logo-dark">
+                                <span><img src="assets/images/logo-dark.png" alt="" height="18"></span>
+                            </a>
+                            <a href="index.html" class="logo-light">
+                                <span><img src="assets/images/logo.png" alt="" height="18"></span>
+                            </a>
+                        </div>
+
+                        <!-- title-->
+                        <h4 class="mt-0">登入</h4>
+
+                        <!-- form -->
+                        <form id='sign-in-form'>
+                            <div class="mb-3">
+                                <label for="username" class="form-label">用戶名稱</label>
+                                <input class="form-control" type="text" id="username" required="" placeholder="輸入您的用戶名稱">
+                            </div>
+                            <div class="mb-3">
+                                <a href="/password_reset" class="text-muted float-end"><small>忘記密碼?</small></a>
+                                <label for="password" class="form-label">密碼</label>
+                                <input class="form-control" type="password" required="" id="password" placeholder="輸入您的密碼">
+                            </div>
+                            <div class="d-grid mb-0 text-center">
+                                <button class="btn btn-primary" type="submit" id='sign-in-button'><i class="mdi mdi-login"></i> 登入 </button>
+                            </div>
+                        </form>
+
+                        <!-- end form-->
+
+                        <!-- Footer-->
+                        <footer class="footer footer-alt">
+                            <p class="text-muted">還沒有帳號? <a href="/register" class="text-muted ms-1"><b>註冊</b></a></p>
+                        </footer>
+
+                    </div> <!-- end .card-body -->
+                </div> <!-- end .align-items-center.d-flex.h-100-->
+            </div>
+            <!-- end auth-fluid-form-box-->
+
+            <!-- Auth fluid right content -->
+            <div class="auth-fluid-right text-center">
+                <div class="auth-user-testimonial">
+                </div> <!-- end auth-user-testimonial-->
+            </div>
+            <!-- end Auth fluid right content -->
+        </div>
+        <!-- end auth-fluid-->
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#success-header-modal" id='success-header-modal-button' style='display:none'></button>
+        <div id="success-header-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="success-header-modalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header modal-colored-header bg-success">
+                        <h4 class="modal-title" id="success-header-modalLabel">登入成功</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+                    </div>
+                    <div class="modal-body" id='auth-success-message'>
+                        <p>登入成功，以下為你的登入憑證，請妥善保管。</p>
+                        <p>
+                            <a class="btn btn-primary" data-bs-toggle="collapse"
+                               href="#token" aria-expanded="false"
+                               aria-controls="token">
+                                JWT憑證
+                            </a>
+                        </p>
+                        <div class="collapse" id="token">
+                            <div class="card card-body mb-0">
+                                <code id="user_token"></code>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal" id='back-index'>前往主頁</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+        <!-- bundle -->
+        <script src="assets/js/vendor.min.js"></script>
+        <script src="assets/js/app.min.js"></script>
+        <script src='login-main.js' type='module'></script>
+    </body>
+
+
+<!-- Mirrored from coderthemes.com/hyper/saas/pages-login-2.html by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 29 Jul 2022 10:21:16 GMT -->
+</html>

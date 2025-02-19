@@ -10,8 +10,20 @@ export default defineConfig({
             from: /^\/preview$/,
             to: '/preview.html'
         }, {
-            from: /^\/editor$/,
-            to: '/editor.html'
+            from: /^\/login$/,
+            to: '/login.html'
+        }, {
+            from: /^\/logout$/,
+            to: '/logout.html'
+        }, {
+            from: /^\/register$/,
+            to: '/register.html'
+        }, {
+            from: /^\/password_reset$/,
+            to: '/password_reset.html'
+        }, {
+            from: /^\/mail_confirm$/,
+            to: '/mail_confirm.html'
         }],
         proxy: {
             '/api': {

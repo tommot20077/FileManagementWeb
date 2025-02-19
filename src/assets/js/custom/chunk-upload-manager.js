@@ -4,7 +4,7 @@ import apiConnector from "./api-connector.js";
 import { WSConnector } from "./ws-connectoer.js";
 
 class ChunkUploadManager {
-    constructor(file, uploadMethod, onProgress, onComplete, onError, maxConcurrentChunks = 5) {
+    constructor(file, uploadMethod, onProgress, onComplete, onError, maxConcurrentChunks = 5, jwtToken) {
         this.file = file;
         this.uploadMethod = uploadMethod; // 'http' 或 'ws'
         this.onProgress = onProgress;
@@ -18,6 +18,7 @@ class ChunkUploadManager {
         this.chunkSize = 0;
         this.ws = null; // 只在 WebSocket 方法中使用
         this.retryCounts = {};
+        this.jwtToken = jwtToken;
     }
 
     start() {
@@ -55,7 +56,7 @@ class ChunkUploadManager {
 
     initWsUpload() {
         const metadata = this.file.fileMetadata;
-        this.ws = new WSConnector(`${Config.wsUrl}/file/upload`, Config.jwt);
+        this.ws = new WSConnector(`${Config.wsUrl}/file/upload`, this.jwtToken);
         this.ws.addEventListener('open', () => {
             const initialUploadMessage = {
                 type: "initialUpload",
@@ -234,7 +235,7 @@ class ChunkUploadManager {
             console.warn(`分塊 ${chunkIndex} 上傳失敗，正在重試 (${this.retryCounts[chunkIndex]}/${maxRetries})`);
             this.queue.push(chunkIndex); // 重新加入隊列
         } else {
-            console.error(`分塊 ${chunkIndex} 上傳失敗，已達最大重試次數`);
+            $.NotificationApp.send(`分塊 ${chunkIndex} 上傳失敗，已達最大重試次數`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
             this.onError(new Error(`分塊 ${chunkIndex} 上傳失敗，請稍後再試。`));
         }
     }

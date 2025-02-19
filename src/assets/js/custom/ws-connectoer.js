@@ -9,7 +9,6 @@ export class WSConnector {
     }
 
     onOpen() {
-        console.log("WebSocket 連接已建立");
         if (this.listeners['open']) {
             this.listeners['open'].forEach(callback => callback());
         }
@@ -17,21 +16,20 @@ export class WSConnector {
 
     onMessage(event) {
         const response = JSON.parse(event.data);
-        //console.log("收到 WebSocket 服務器消息:", response);
         if (this.listeners['message']) {
             this.listeners['message'].forEach(callback => callback(response));
         }
     }
 
     onError(error) {
-        console.error("WebSocket 錯誤:", error);
+        $.NotificationApp.send(`WebSocket 錯誤:${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+
         if (this.listeners['error']) {
             this.listeners['error'].forEach(callback => callback(error));
         }
     }
 
     onClose() {
-        console.log("WebSocket 連接已關閉");
         if (this.listeners['close']) {
             this.listeners['close'].forEach(callback => callback());
         }
@@ -41,7 +39,7 @@ export class WSConnector {
         if (this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify(data));
         } else {
-            console.error("WebSocket 尚未開啟，無法發送資料");
+            $.NotificationApp.send("WebSocket 尚未開啟，無法發送資料", "", "bottom-right", "rgba(0,0,0,0.2)", "warning");
         }
     }
 

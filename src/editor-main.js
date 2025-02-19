@@ -2,6 +2,7 @@ import hljs from 'highlight.js';
 import Quill, {Delta} from "quill";
 import apiConnector from "./assets/js/custom/api-connector.js";
 import {buttonLoading} from "./assets/js/custom/component.js";
+import {logout} from "./logout-main.js";
 
 let fileId = null;
 let filename = null;
@@ -196,7 +197,6 @@ async function getUserHistoryVersion () {
     document.getElementById("checkBuildHistoryBottom").addEventListener("click", function() {
         let note = document.getElementById("NewHistoryNote").value;
         buttonLoading(this, true, "建立中...");
-        console.log(note);
         const data = {
             fileId: fileId,
             fileName: filename,
@@ -220,5 +220,5 @@ async function getUserHistoryVersion () {
         });
     });
 }
-
+document.getElementById("logoutBtn")?.addEventListener("click", logout);
 

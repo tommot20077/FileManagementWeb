@@ -1,12 +1,11 @@
 import config from "../config.js";
 
+
 export async function loadFilePreview(fileId) {
     try {
         const response = await fetch(`${config.apiUrl}/api/files/${fileId}?action=preview`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${config.jwt}`
-            }
+            credentials: 'include'
         });
         if (!response.ok) {
             new Error('無法加載檔案');
@@ -62,7 +61,7 @@ export async function loadFilePreview(fileId) {
         }
         container.appendChild(element);
     } catch (error) {
-        console.error('錯誤:', error);
+        $.NotificationApp.send(`錯誤:${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
 }
 

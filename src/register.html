@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    
+<!-- Mirrored from coderthemes.com/hyper/saas/pages-register-2.html by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 29 Jul 2022 10:21:16 GMT -->
+<head>
+        <meta charset="utf-8" />
+        <title>註冊新帳號</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta content="一個檔案管理綜合平台，提供用戶管理檔案" name="description" />
+        <meta content="Coderthemes" name="author" />
+        <!-- App favicon -->
+        <link rel="shortcut icon" href="assets/images/favicon.ico">
+
+        <!-- App css -->
+        <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+        <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" id="app-style"/>
+
+    </head>
+
+    <body class="authentication-bg pb-0" data-layout-config='{"darkMode":false}'>
+
+        <div class="auth-fluid">
+            <!--Auth fluid left content -->
+            <div class="auth-fluid-form-box">
+                <div class="align-items-center d-flex h-100">
+                    <div class="card-body">
+
+                        <!-- Logo -->
+                        <div class="auth-brand text-center text-lg-start">
+                            <a href="index.html" class="logo-dark">
+                                <span><img src="assets/images/logo-dark.png" alt="" height="18"></span>
+                            </a>
+                            <a href="index.html" class="logo-light">
+                                <span><img src="assets/images/logo.png" alt="" height="18"></span>
+                            </a>
+                        </div>
+
+                        <!-- title-->
+                        <h4 class="mt-0">註冊</h4>
+                        <p class="text-muted mb-4">還沒有帳號? 花幾秒鐘註冊一下吧!</p>
+
+                        <!-- form -->
+                        <form id='sign-up-form'>
+                            <div class="mb-3">
+                                <label for="username" class="form-label">用戶名稱</label>
+                                <input class="form-control" type="text" id="username" placeholder="輸入您的用戶名稱" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">電子信箱</label>
+                                <input class="form-control" type="email" id="email" required placeholder="輸入您的電子信箱">
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">密碼</label>
+                                <input class="form-control" type="password" required id="password" placeholder="輸入您的密碼">
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirm-password" class="form-label">確認密碼</label>
+                                <input class="form-control" type="password" required id="confirm-password" placeholder="輸入您的密碼">
+                            </div>
+                            <div class="mb-0 d-grid text-center">
+                                <button class="btn btn-primary" id='submit_form'><i class="mdi mdi-account-circle"></i> 註冊 </button>
+                            </div>
+                        </form>
+                        <!-- end form-->
+
+
+
+                        <!-- Footer-->
+                        <footer class="footer footer-alt">
+                            <p class="text-muted">已經有帳號了? <a href="/login" class="text-muted ms-1"><b>登入</b></a></p>
+                        </footer>
+
+                    </div> <!-- end .card-body -->
+                </div> <!-- end .align-items-center.d-flex.h-100-->
+            </div>
+            <!-- end auth-fluid-form-box-->
+
+            <!-- Auth fluid right content -->
+            <div class="auth-fluid-right text-center">
+                <div class="auth-user-testimonial">
+                </div> <!-- end auth-user-testimonial-->
+            </div>
+            <!-- end Auth fluid right content -->
+        </div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#success-header-modal" id='modal-button' hidden=''></button>
+        <!-- end auth-fluid-->
+        <div id="success-header-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="success-header-modalLabel" data-bs-backdrop="static" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header modal-colored-header bg-success">
+                        <h4 class="modal-title" id="success-header-modalLabel">恭喜</h4>
+                    </div>
+                    <div class="modal-body">
+                        註冊成功!
+                    </div>
+                    <div class="modal-footer">
+                        <button id='back-login' type="button" class="btn btn-light" data-bs-dismiss="modal">返回登入頁面</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+        <!-- bundle -->
+        <script src="assets/js/vendor.min.js"></script>
+        <script src="assets/js/app.min.js"></script>
+        <script src='register-main.js' type='module'></script>
+    </body>
+
+
+<!-- Mirrored from coderthemes.com/hyper/saas/pages-register-2.html by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 29 Jul 2022 10:21:16 GMT -->
+</html>

@@ -215,7 +215,7 @@ class FolderTree {
                     closeMoveFileModal();
                 }
             } catch (error) {
-                console.error('移動失敗:', error);
+                $.NotificationApp.send(`移動失敗:${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
             }
         });
 

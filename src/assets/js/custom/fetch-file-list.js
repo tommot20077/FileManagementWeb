@@ -237,8 +237,8 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
             }
             window.history.pushState(paramsName, '', newUrl);
         }
-    } catch (e) {
-        console.error(e);
+    } catch (error) {
+        $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
 }
 async function openEditor(file) {
@@ -254,9 +254,7 @@ async function getFileResource(fileId, action) {
         } else {
             const response = await fetch(`${config.apiUrl}/api/files/${fileId}?action=download`, {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${config.jwt}`
-                }
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -280,7 +278,7 @@ async function getFileResource(fileId, action) {
             await pump();
         }
     } catch (error) {
-        console.error('下載錯誤:', error);
+        $.NotificationApp.send(`下載錯誤:${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
 }
 
@@ -306,7 +304,7 @@ async function deleteFile(fileId, isFolder) {
                 getUserInfo(true);
             }
         }).catch(error => {
-            console.error(error);
+            $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         });
     } else {
         apiConnector.delete(`/api/files/${fileId}`).then(response => {
@@ -316,7 +314,7 @@ async function deleteFile(fileId, isFolder) {
                 getUserInfo(true);
             }
         }).catch(error => {
-            console.error(error);
+            $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         });
     }
 }

@@ -30,7 +30,7 @@ document.getElementById("addNewFolder").addEventListener('click', () => {
                 }
             });
         } catch (error) {
-            console.error(error);
+            $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
             errorContainer.textContent = error.response?.data?.message || '發生錯誤，請稍後再試。';
         }
 
@@ -90,11 +90,10 @@ document.getElementById("saveEditFile").addEventListener('click', async () => {
             document.getElementById("editFileModal").classList.add("hidden");
             await fetchFileList(currentFolderId);
         } else {
-            // 後端返回錯誤狀態
             errorContainer.textContent = response.data.message || '編輯檔案失敗。';
         }
     } catch (error) {
-        console.error(error);
+        $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         errorContainer.textContent = error.response?.data?.message || '發生錯誤，請稍後再試。';
     }
 });
@@ -132,7 +131,7 @@ document.getElementById("addNewOnlineDocument").addEventListener('click', () => 
         }
         throw new Error(response.data.message || '新增檔案失敗。');
     }).catch(error => {
-        console.error(error);
+        $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         $.NotificationApp.send(`檔案建立失敗: ${error}`,"","bottom-right","rgba(0,0,0,0.2)","error");
     });
 });

@@ -12,6 +12,7 @@ Dropzone.autoDiscover = false;
 
 // 初始化 Dropzone
 let myDropzone;
+let jwtToken = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     // 確保 Dropzone 僅初始化一次
@@ -76,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             reader.onerror = function () {
                 updateProgress(file.previewElement, 0, 'error', '雜湊值計算失敗');
-                console.error('檔案讀取錯誤');
+                $.NotificationApp.send("檔案讀取錯誤", "", "bottom-right", "rgba(0,0,0,0.2)", "error");
                 file.uploadStatus = "failed";
                 checkAllFilesProcessed();
             };
@@ -90,7 +91,7 @@ document.getElementById('submitUpload').addEventListener('click', () => {
     removeDropzoneHandleFile(myDropzone);
     const files = myDropzone.files;
     if (myDropzone && files.length === 0) {
-        alert('請選擇要上傳的文件');
+        $
         return;
     }
 
@@ -99,7 +100,7 @@ document.getElementById('submitUpload').addEventListener('click', () => {
     files.forEach(file => {
         const metadata = file.fileMetadata;
         if (!metadata) {
-            console.warn(`文件 ${file.name} 沒有 fileMetadata，跳過上傳。`);
+            $.NotificationApp.send("文件 ${file.name} 沒有 fileMetadata，跳過上傳。", "", "bottom-right", "rgba(0,0,0,0.2)", "warning");
             updateProgress(file.previewElement, 0, 'failed', '無效的文件元數據');
             file.uploadStatus = "failed";
             if (uploadManager.currentUploads === 0 && uploadManager.queue.length === 0) {
@@ -124,11 +125,12 @@ document.getElementById('submitUpload').addEventListener('click', () => {
                         }
                     },
                     (error) => {
-                        console.error(`文件 ${file.name} 上傳失敗:`, error);
+                        $.NotificationApp.send(`文件 ${file.name} 上傳失敗`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
                         toggleUploadButtons(false);
                         reject(error);
                     },
-                    Config.maxConcurrentChunks || 5 // 每個任務的最大分塊並發數
+                    Config.maxConcurrentChunks || 5,
+                    jwtToken
                 );
 
                 chunkManager.start();
@@ -143,7 +145,7 @@ document.getElementById('submitUpload').addEventListener('click', () => {
                          }
                      })
                      .catch(err => {
-                         console.error(`文件 ${file.name} 上傳失敗:`, err);
+                         $.NotificationApp.send(`文件 ${file.name} 上傳失敗:${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
                          if (uploadManager.currentUploads === 0 && uploadManager.queue.length === 0) {
                              toggleUploadButtons(false);
                          }
@@ -151,12 +153,22 @@ document.getElementById('submitUpload').addEventListener('click', () => {
     });
 });
 
+document.getElementById("submitToken").addEventListener("click", (e) => {
+    e.preventDefault()
+    jwtToken = document.getElementById("jwtToken").value;
+});
 
 document.getElementById('submitUploadWs').addEventListener('click', () => {
+    if (!jwtToken) {
+        $.NotificationApp.send("請輸入 JWT 憑證", "", "bottom-right", "rgba(0,0,0,0.2)", "warning");
+        document.getElementById("check-ws-upload-modal-button").click();
+        return;
+    }
+
     removeDropzoneHandleFile(myDropzone);
     const files = myDropzone.files;
     if (files.length === 0) {
-        alert("沒有待上傳的文件。");
+        $.NotificationApp.send("沒有待上傳的文件", "", "bottom-right", "rgba(0,0,0,0.2)", "warning");
         return;
     }
 
@@ -165,7 +177,7 @@ document.getElementById('submitUploadWs').addEventListener('click', () => {
     files.forEach(file => {
         const metadata = file.fileMetadata;
         if (!metadata) {
-            console.error(`文件 ${file.name} 沒有 fileMetadata，跳過上傳。`);
+            $.NotificationApp.send(`文件 ${file.name} 沒有 fileMetadata，跳過上傳。`, "", "bottom-right", "rgba(0,0,0,0.2)", "warning");
             updateProgress(file.previewElement, 0, 'failed', '無效的文件元數據');
             file.uploadStatus = "failed";
             return;
@@ -187,11 +199,12 @@ document.getElementById('submitUploadWs').addEventListener('click', () => {
                         }
                     },
                     (error) => {
-                        console.error(`文件 ${file.name} 通過 WebSocket 上傳失敗:`, error);
+                        $.NotificationApp.send(`文件 ${file.name} 通過 WebSocket 上傳失敗: ${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "warning");
                         toggleUploadButtons(false); // 上傳失敗後恢復按鈕
                         reject(error);
                     },
-                    Config.maxConcurrentChunks || 5 // 每個任務的最大分塊並發數
+                    Config.maxConcurrentChunks || 5,
+                    jwtToken
                 );
 
                 chunkManager.start();
@@ -206,7 +219,7 @@ document.getElementById('submitUploadWs').addEventListener('click', () => {
                          }
                      })
                      .catch(err => {
-                         console.error(`文件 ${file.name} 通過 WebSocket 上傳失敗:`, err);
+                         $.NotificationApp.send(`文件 ${file.name} 通過 WebSocket 上傳失敗:${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
                          if (uploadManager.currentUploads === 0 && uploadManager.queue.length === 0) {
                              toggleUploadButtons(false); // 上傳失敗後恢復按鈕
                          }

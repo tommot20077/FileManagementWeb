@@ -8,6 +8,7 @@ import uploadManager from './assets/js/custom/upload-manager.js';
 import {WSConnector} from './assets/js/custom/ws-connectoer.js';
 import {getUserInfo} from "./assets/js/custom/user-info.js";
 import fetchFileList from "./assets/js/custom/fetch-file-list.js";
+import {logout} from "./logout-main.js";
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -31,3 +32,5 @@ window.addEventListener("popstate", (event) => {
         });
     }
 });
+
+document.getElementById("logoutBtn")?.addEventListener("click", logout);
