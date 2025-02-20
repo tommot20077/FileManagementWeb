@@ -372,7 +372,8 @@
                                         <span>鎖定螢幕</span> </a>
 
                                     <!-- item-->
-                                    <a href="javascript:void(0);" id='logoutBtn' class="dropdown-item notify-item"> <i class="mdi mdi-logout me-1"></i> <span>登出</span> </a>
+                                    <a href="javascript:void(0);" id='logoutBtn' class="dropdown-item notify-item"> <i class="mdi mdi-logout me-1"></i>
+                                        <span>登出</span> </a>
                                 </div>
                             </li>
 
@@ -469,7 +470,8 @@
                                                         class="btn btn-success dropdown-toggle w-100"
                                                         data-bs-toggle="dropdown"
                                                         aria-haspopup="true"
-                                                        aria-expanded="false"><i class="mdi mdi-plus"></i> 新建
+                                                        aria-expanded="false"
+                                                        id="add-new-file-button"><i class="mdi mdi-plus"></i> 新建
                                                 </button>
                                                 <div class="dropdown-menu">
                                                     <button class="dropdown-item" id="add-new-folder">
@@ -619,7 +621,7 @@
                                                                 <input type="text" class="form-control" id="editFileName" placeholder="檔案名稱">
                                                                 <input type="hidden" id="editFileId"> <input type="hidden" id="isFolder"> <input type="hidden"
                                                                                                                                                  id="shareUsers">
-                                                                <input type="hidden" id="parentFolderId">
+                                                                <input type="hidden" id="isStar"> <input type="hidden" id="parentFolderId">
                                                             </div>
                                                             <div>
                                                                 <a href="javascript:void(0);" class="error-message" id="editFileNameError"></a>
@@ -648,17 +650,18 @@
 
 
                                             <div class="email-menu-list mt-3">
-                                                <a href="#"
+                                                <a href="/index"
                                                    class="list-group-item border-0"><i class="mdi mdi-folder-outline font-18 align-middle me-2"></i>我的 文件</a>
-                                                <a href="#"
-                                                   class="list-group-item border-0"><i class="mdi mdi-google-drive font-18 align-middle me-2"></i>Google Drive</a>
-                                                <a href="#"
-                                                   class="list-group-item border-0"><i class="mdi mdi-dropbox font-18 align-middle me-2"></i>Dropbox</a>
-                                                <a href="#"
+                                                <a class="list-group-item border-0"><i class="mdi mdi-google-drive font-18 align-middle me-2"></i>Google Drive</a>
+                                                <a class="list-group-item border-0"><i class="mdi mdi-dropbox font-18 align-middle me-2"></i>Dropbox</a>
+                                                <a href="javascript:void(0);"
                                                    class="list-group-item border-0"><i class="mdi mdi-share-variant font-18 align-middle me-2"></i>與 我分享</a>
-                                                <a href="#" class="list-group-item border-0"><i class="mdi mdi-clock-outline font-18 align-middle me-2"></i>最近</a>
-                                                <a href="#" class="list-group-item border-0"><i class="mdi mdi-star-outline font-18 align-middle me-2"></i>加星標</a>
-                                                <a href="#" class="list-group-item border-0"><i class="mdi mdi-delete font-18 align-middle me-2"></i>已刪除 文件</a>
+                                                <a href="/web/folder/-2"
+                                                   class="list-group-item border-0"><i class="mdi mdi-star-outline font-18 align-middle me-2"></i>加星標</a> <a
+                                                href="/web/folder/-3"
+                                                class="list-group-item border-0"><i class="mdi mdi-clock-outline font-18 align-middle me-2"></i>最近</a>
+                                                <a href="javascript:void(0);"
+                                                   class="list-group-item border-0"><i class="mdi mdi-delete font-18 align-middle me-2"></i>已刪除 文件</a>
                                             </div>
 
                                             <div class="mt-5" id="user-storage-status">
@@ -744,14 +747,14 @@
 
 
                                             <div class="mt-3">
-                                                <h5 class="mb-3">最近</h5>
+                                                <h5 class="mb-3">檔案列表</h5>
 
                                                 <div class="table-responsive">
                                                     <table class="table table-centered table-hover table-nowrap mb-0">
                                                         <thead class="table-light">
                                                             <tr>
                                                                 <th class="border-0">名稱</th>
-                                                                <th class="border-0">最後修改</th>
+                                                                <th class="border-0">最後使用時間</th>
                                                                 <th class="border-0">大小</th>
                                                                 <th class="border-0">擁有者</th>
                                                                 <th class="border-0">共享成員</th>
@@ -778,15 +781,23 @@
                         </div><!-- 結束 row -->
 
                     </div> <!-- container -->
-                    <button id='check-ws-upload-modal-button' type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#check-ws-upload-modal" hidden=''></button>
+                    <button id='check-ws-upload-modal-button'
+                            type="button"
+                            class="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#check-ws-upload-modal"
+                            hidden=''></button>
                     <div id="check-ws-upload-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-body">
                                     <form class="ps-3 pe-3">
                                         <div class="mb-3">
-                                            <label for="jwtToken" class="form-label">JWT憑證</label>
-                                            <input class="form-control" type="text" id="jwtToken" required="" placeholder="請輸入您的憑證">
+                                            <label for="jwtToken" class="form-label">JWT憑證</label> <input class="form-control"
+                                                                                                            type="text"
+                                                                                                            id="jwtToken"
+                                                                                                            required=""
+                                                                                                            placeholder="請輸入您的憑證">
                                         </div>
                                         <div class="mb-3 text-center">
                                             <button class="btn btn-primary" data-bs-dismiss="modal" id='submitToken'>提交</button>

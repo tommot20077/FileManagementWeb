@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     file.fileMetadata = {
-                        fileName: file.name,
+                        filename: file.name,
                         parentFolderId: parentFolderId,
                         md5: FileMD5,
                         fileSize: file.size,

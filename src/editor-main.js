@@ -78,7 +78,7 @@ document.getElementById("update-btn").addEventListener("click", function () {
 
     let data = {
         fileId: fileId,
-        fileName: filename,
+        filename: filename,
         content: {delta: quill.getContents().ops},
         editType: "EDIT_CONTENT"
     }
@@ -172,7 +172,7 @@ async function getUserHistoryVersion () {
 
         const data = {
             fileId: fileId,
-            fileName: filename,
+            filename: filename,
             version: id,
             editType: "REVERT_HISTORY_RECORD"
         }
@@ -199,7 +199,7 @@ async function getUserHistoryVersion () {
         buttonLoading(this, true, "建立中...");
         const data = {
             fileId: fileId,
-            fileName: filename,
+            filename: filename,
             editType: "BUILD_HISTORY_RECORD",
             content: {delta: quill.getContents().ops},
             note: note

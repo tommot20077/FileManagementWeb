@@ -1,7 +1,7 @@
 import apiConnector from "./api-connector.js";
 import {formatFileSize, updatePaginationControls} from "./tool.js";
 import config from "../../../../config.js";
-import {openEditFileModal} from "./edit-resource.js";
+import {loadEditData, openEditFileModal} from "./edit-resource.js";
 import {openMoveFileModal} from "./folder-tree.js";
 import streamSaver from 'streamsaver';
 import {getUserInfo} from "./user-info.js";
@@ -55,7 +55,7 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
             const nameLink = document.createElement('a');
             nameLink.href = 'javascript:void(0);';
             nameLink.classList.add('text-reset');
-            nameLink.textContent = file.filename;
+            nameLink.innerHTML = file.filename + (file.isStar ? '<i class="mdi mdi-star text-warning ms-1"></i>' : '');
             nameLink.title = file.filename;
             nameSpan.appendChild(nameLink);
             nameTd.appendChild(nameSpan);
@@ -63,12 +63,11 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
 
             nameLink.addEventListener('click', async (e) => {
                 e.preventDefault();
-                if (file.folder) {
+                if (file.isFolder) {
                     await fetchFileList(file.id);
                 } else if (file.fileType === 'ONLINE_DOCUMENT') {
                     await openEditor(file);
-                }
-                else {
+                } else {
                     await getFileResource(file.id, 'preview');
                 }
             });
@@ -87,12 +86,11 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
 
             const sizeTd = document.createElement('td');
             const ownerTd = document.createElement('td');
-            if (!file.folder) {
+            ownerTd.textContent = username;
+            if (!file.isFolder) {
                 sizeTd.textContent = formatFileSize(file.fileSize);
-                ownerTd.textContent = username;
             } else {
                 sizeTd.textContent = '-';
-                ownerTd.textContent = '-';
             }
             tr.appendChild(sizeTd);
             tr.appendChild(ownerTd);
@@ -146,6 +144,8 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
             const actions = [
                 {icon: 'mdi-share-variant', text: '分享'},
                 {icon: 'mdi-link', text: '取得可分享連結'},
+                {icon: 'mdi-star', text: '加入星號'},
+                {icon: 'mdi-star-outline', text: '移除星號'},
                 {icon: 'mdi-pencil', text: '重新命名'},
                 {icon: 'mdi-file-move', text: '移動'},
                 {icon: 'mdi-eye', text: '預覽'},
@@ -154,14 +154,15 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
             ];
 
             actions.forEach(action => {
-                if (file.folder && (action.text === '預覽' || action.text === '下載')) {
+                if (file.isFolder && (action.text === '預覽' || action.text === '下載')) {
                     return;
                 }
                 if (file.fileType === 'ONLINE_DOCUMENT' && action.text === '下載') {
                     return;
                 }
-
-
+                if ((file.isStar && action.text === '加入星號') || (!file.isStar && action.text === '移除星號')) {
+                    return;
+                }
                 const actionItem = document.createElement('a');
                 actionItem.href = '#';
                 actionItem.classList.add('dropdown-item', 'notify-item');
@@ -191,7 +192,7 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
                 } else if (action.text === '移除') {
                     actionItem.addEventListener('click', async (e) => {
                         e.preventDefault();
-                        await deleteFile(file.id, file.folder);
+                        await deleteFile(file.id, file.isFolder);
                     });
                 } else if (action.text === '重新命名') {
                     actionItem.addEventListener('click', async (e) => {
@@ -202,6 +203,13 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
                     actionItem.addEventListener('click', async (e) => {
                         e.preventDefault();
                         await openMoveFileModal(file);
+                    });
+                } else if (action.text === '加入星號' || action.text === '移除星號') {
+                    actionItem.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        loadEditData(file)
+                        document.getElementById("isStar").value = '加入星號' === action.text;
+                        document.getElementById('saveEditFile').click();
                     });
                 }
 
@@ -241,6 +249,7 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
         $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
 }
+
 async function openEditor(file) {
     window.name = JSON.stringify(file);
     window.location.href = `/editor?id=${file.id}`;
@@ -346,5 +355,6 @@ function updateBreadcrumb(filePaths) {
         breadcrumb.appendChild(breadcrumbItem);
     });
 }
+
 
 export default {fetchFileList, currentFolderId};

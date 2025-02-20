@@ -75,12 +75,11 @@
         </div>
         <!-- end auth-fluid-->
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#success-header-modal" id='success-header-modal-button' style='display:none'></button>
-        <div id="success-header-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="success-header-modalLabel" aria-hidden="true">
+        <div id="success-header-modal" class="modal fade" tabindex="-1" role="dialog" data-bs-backdrop="static" aria-labelledby="success-header-modalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header modal-colored-header bg-success">
                         <h4 class="modal-title" id="success-header-modalLabel">登入成功</h4>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
                     </div>
                     <div class="modal-body" id='auth-success-message'>
                         <p>登入成功，以下為你的登入憑證，請妥善保管。</p>

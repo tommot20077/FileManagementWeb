@@ -14,7 +14,6 @@ import {logout} from "./logout-main.js";
 document.addEventListener('DOMContentLoaded', () => {
 
     const urlParams = new URLSearchParams(window.location.search);
-    //const folderId = urlParams.get('id') || 0;
     const pathParts = window.location.pathname.split('/');
     const folderId = parseInt(pathParts[pathParts.length - 1]) || 0;
     const page = urlParams.get('page') || 1;
@@ -24,6 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     getUserInfo();
 
+
+    if (folderId < 0) {
+        document.getElementById("add-new-file-button").setAttribute("disabled", "true");
+    }
 });
 
 window.addEventListener("popstate", (event) => {
@@ -34,3 +37,5 @@ window.addEventListener("popstate", (event) => {
 });
 
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
+
+
