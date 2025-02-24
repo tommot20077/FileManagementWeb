@@ -2,6 +2,17 @@ import {currentFolderId, fetchFileList} from "./fetch-file-list.js";
 
 const unit = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
 
+export const reservedPath = {
+    "all": "-1",
+    "star": "-2",
+    "recently": "-3",
+    "recycle": "-4",
+
+    "-1": "all",
+    "-2": "star",
+    "-3": "recently",
+    "-4": "recycle"
+}
 function formatFileSize(size) {
     if (typeof size !== 'number' || isNaN(size)) {
         return 'Invalid size';

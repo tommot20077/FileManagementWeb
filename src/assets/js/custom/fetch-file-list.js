@@ -1,5 +1,5 @@
 import apiConnector from "./api-connector.js";
-import {formatFileSize, updatePaginationControls} from "./tool.js";
+import {formatFileSize, reservedPath, updatePaginationControls} from "./tool.js";
 import config from "../../../../config.js";
 import {loadEditData, openEditFileModal} from "./edit-resource.js";
 import {openMoveFileModal} from "./folder-tree.js";
@@ -11,6 +11,7 @@ const breadcrumb = document.getElementById('breadcrumb');
 
 export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pageSize, type) {
     currentFolderId = folderId;
+
     let response;
     try {
         let url = `/api/folders/${folderId}`
@@ -39,6 +40,8 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
         const totalPages = response.data.data.files.totalPages;
         const currentPage = response.data.data.files.currentPage;
 
+        const isRecycle = parseInt(String(folderId)) === -4
+
         updateBreadcrumb(filePaths);
 
         tbody.innerHTML = '';
@@ -47,30 +50,32 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
             const tr = document.createElement('tr');
 
             const nameTd = document.createElement('td');
-            nameTd.style.maxWidth = '200px';
+            nameTd.style.width = '400px';
             nameTd.classList.add('text-truncate');
             const nameSpan = document.createElement('span');
             nameSpan.classList.add('ms-2', 'fw-semibold');
-            nameTd.style.maxWidth = '200px';
             const nameLink = document.createElement('a');
             nameLink.href = 'javascript:void(0);';
             nameLink.classList.add('text-reset');
-            nameLink.innerHTML = file.filename + (file.isStar ? '<i class="mdi mdi-star text-warning ms-1"></i>' : '');
+            nameLink.style.fontSize = '1.05rem';
+            nameLink.innerHTML = getLabelName(file);
             nameLink.title = file.filename;
             nameSpan.appendChild(nameLink);
             nameTd.appendChild(nameSpan);
             tr.appendChild(nameTd);
 
-            nameLink.addEventListener('click', async (e) => {
-                e.preventDefault();
-                if (file.isFolder) {
-                    await fetchFileList(file.id);
-                } else if (file.fileType === 'ONLINE_DOCUMENT') {
-                    await openEditor(file);
-                } else {
-                    await getFileResource(file.id, 'preview');
-                }
-            });
+            if (!isRecycle) {
+                nameLink.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    if (file.isFolder) {
+                        await fetchFileList(file.id);
+                    } else if (file.fileType === 'ONLINE_DOCUMENT') {
+                        await openEditor(file);
+                    } else {
+                        await getFileResource(file.id, 'preview');
+                    }
+                });
+            }
 
 
             const modifiedTd = document.createElement('td');
@@ -141,7 +146,7 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
             const dropdownMenu = document.createElement('div');
             dropdownMenu.classList.add('dropdown-menu', 'dropdown-menu-end');
 
-            const actions = [
+            const normalActions = [
                 {icon: 'mdi-share-variant', text: '分享'},
                 {icon: 'mdi-link', text: '取得可分享連結'},
                 {icon: 'mdi-star', text: '加入星號'},
@@ -150,10 +155,17 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
                 {icon: 'mdi-file-move', text: '移動'},
                 {icon: 'mdi-eye', text: '預覽'},
                 {icon: 'mdi-download', text: '下載'},
-                {icon: 'mdi-delete', text: '移除'},
+                {icon: 'mdi-trash-can', text: '移動到回收桶'},
             ];
 
-            actions.forEach(action => {
+            const recycleActions = [
+                {icon: 'mdi-restore', text: '還原'},
+                {icon: 'mdi-delete', text: '永久刪除'},
+            ];
+
+            const chooseActions = parseInt(String(folderId)) === -4 ? recycleActions : normalActions;
+
+            chooseActions.forEach(action => {
                 if (file.isFolder && (action.text === '預覽' || action.text === '下載')) {
                     return;
                 }
@@ -189,10 +201,10 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
                         e.preventDefault();
                         await getFileResource(file.id, 'download');
                     });
-                } else if (action.text === '移除') {
+                } else if (action.text === '移動到回收桶') {
                     actionItem.addEventListener('click', async (e) => {
                         e.preventDefault();
-                        await deleteFile(file.id, file.isFolder);
+                        await removeFile(file.id, file.isFolder);
                     });
                 } else if (action.text === '重新命名') {
                     actionItem.addEventListener('click', async (e) => {
@@ -211,6 +223,16 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
                         document.getElementById("isStar").value = '加入星號' === action.text;
                         document.getElementById('saveEditFile').click();
                     });
+                } else if (action.text === '永久刪除') {
+                    actionItem.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        await deleteFile(file.id, file.isFolder);
+                    });
+                } else if (action.text === '還原') {
+                    actionItem.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        await restoreFile(file.id, file.isFolder);
+                    });
                 }
 
 
@@ -227,7 +249,13 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
         updatePaginationControls(currentPage, totalPages, pageSize, type);
 
         if (updateUrl) {
-            let newUrl = `/web/folder/${folderId}`;
+            let anotherPathname = String(folderId);
+
+            if (String(folderId) in reservedPath && !isNaN(folderId)) {
+                anotherPathname = reservedPath[String(folderId)];
+            }
+
+            let newUrl = `/web/folder/${anotherPathname}`;
             let paramsName = {}
 
             if (params !== "?") {
@@ -328,6 +356,55 @@ async function deleteFile(fileId, isFolder) {
     }
 }
 
+async function removeFile(fileId, isFolder) {
+    if (isFolder) {
+        apiConnector.post(`/api/folders/remove/${fileId}`).then(response => {
+            const status = response.data.status;
+            if (status === 200) {
+                fetchFileList(currentFolderId).then();
+                getUserInfo(true);
+            }
+        }).catch(error => {
+            $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        });
+    } else {
+        apiConnector.delete(`/api/files/remove/${fileId}`).then(response => {
+            const status = response.data.status;
+            if (status === 200) {
+                fetchFileList(currentFolderId).then();
+                getUserInfo(true);
+            }
+        }).catch(error => {
+            $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        });
+    }
+}
+
+async function restoreFile(fileId, isFolder) {
+    if (isFolder) {
+        apiConnector.post(`/api/folders/restore/${fileId}`).then(response => {
+            const status = response.data.status;
+            if (status === 200) {
+                fetchFileList(currentFolderId).then();
+                getUserInfo(true);
+            }
+        }).catch(error => {
+            $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        });
+    } else {
+        apiConnector.post(`/api/files/restore/${fileId}`).then(response => {
+            const status = response.data.status;
+            if (status === 200) {
+                fetchFileList(currentFolderId).then();
+                getUserInfo(true);
+            }
+        }).catch(error => {
+            $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        });
+    }
+}
+
+
 function updateBreadcrumb(filePaths) {
     breadcrumb.innerHTML = '';
     filePaths.reverse().forEach((folder, index) => {
@@ -356,5 +433,34 @@ function updateBreadcrumb(filePaths) {
     });
 }
 
+function getLabelName(file) {
+    let name = file.filename;
+    let label = document.createElement('i')
+    label.classList.add('mdi', 'me-2', "text-primary", "mdi-24px");
+    if (file.isFolder) {
+        label.classList.add('mdi-folder');
+    } else if (file.fileType === 'ONLINE_DOCUMENT') {
+        label.classList.add('mdi-file-document-edit');
+    } else if (file.fileType === 'IMAGE') {
+        label.classList.add('mdi-file-image');
+    } else if (file.fileType === 'MUSIC') {
+        label.classList.add('mdi-file-music');
+    } else if (file.fileType === 'VIDEO') {
+        label.classList.add('mdi-file-video');
+    } else if (file.fileType === 'DOCUMENT') {
+        label.classList.add('mdi-file-document');
+    } else if (file.fileType === 'ZIP') {
+        label.classList.add('mdi-zip-box');
+    } else {
+        label.classList.add('mdi-file');
+    }
+    name = label.outerHTML + name;
+
+
+    if (file.isStar) {
+        name += '<i class="mdi mdi-star text-warning ms-1"></i>';
+    }
+    return name;
+}
 
 export default {fetchFileList, currentFolderId};
