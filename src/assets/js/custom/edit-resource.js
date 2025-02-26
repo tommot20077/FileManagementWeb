@@ -53,19 +53,30 @@ export async function openEditFileModal(file) {
 export function loadEditData(file) {
     document.getElementById('editFileName').value = file.filename;
     document.getElementById('editFileId').value = file.id;
-    document.getElementById("isFolder").value = file.isFolder;
+    document.getElementById("fileType").value = file.fileType;
     document.getElementById("isStar").value = file.isStar || false;
     document.getElementById('shareUsers').value = file.shareUsers || [];
     document.getElementById("parentFolderId").value = file.parentFolderId;
     document.getElementById('editFileNameError').textContent = '';
 }
 
+function cleanFileInformation() {
+    document.getElementById('editFileName').value = '';
+    document.getElementById('editFileId').value = '';
+    document.getElementById("fileType").value = '';
+    document.getElementById("isStar").value = '';
+    document.getElementById('shareUsers').value = '';
+    document.getElementById("parentFolderId").value = '';
+    document.getElementById('editFileNameError').textContent = '';
+}
+
+
 // 編輯檔案模組
 document.getElementById("saveEditFile").addEventListener('click', async () => {
     const newFileName = document.getElementById('editFileName').value.trim();
     const fileId = document.getElementById('editFileId').value;
-    const isFolder = document.getElementById("isFolder").value;
     const isStar = document.getElementById("isStar").value;
+    const fileType = document.getElementById("fileType").value;
     const shareUsers = document.getElementById('shareUsers').value;
     const parentFolderId = document.getElementById("parentFolderId").value;
     const errorContainer = document.getElementById('editFileNameError');
@@ -78,7 +89,7 @@ document.getElementById("saveEditFile").addEventListener('click', async () => {
         return;
     }
 
-    const url = isFolder === 'true' ? '/api/folders' : '/api/files';
+    const url = (fileType === 'FOLDER') ? '/api/folders' : '/api/files';
 
     try {
         const response = await apiConnector.put(`${url}`, {
@@ -90,11 +101,7 @@ document.getElementById("saveEditFile").addEventListener('click', async () => {
         });
 
         if (response.data.status === 200) {
-            // 編輯成功
-            document.getElementById('editFileName').value = '';
-            document.getElementById('editFileId').value = '';
-            document.getElementById("isFolder").value = '';
-            document.getElementById("isStar").value = '';
+            cleanFileInformation();
             document.getElementById("editFileModal").classList.add("hidden");
             await fetchFileList(currentFolderId);
         } else {
@@ -109,10 +116,9 @@ document.getElementById("saveEditFile").addEventListener('click', async () => {
 // 取消編輯檔案
 document.getElementById("cancelEditFile").addEventListener('click', (e) => {
     e.preventDefault();
-    document.getElementById('editFileName').value = '';
-    document.getElementById('editFileId').value = '';
+    cleanFileInformation();
     document.getElementById("editFileModal").classList.add("hidden");
-    document.getElementById('editFileNameError').textContent = '';
+
 });
 
 
@@ -142,6 +148,5 @@ document.getElementById("addNewOnlineDocument").addEventListener('click', () => 
         $.NotificationApp.send(`檔案建立失敗:${error.response?.data?.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     });
 });
-
 
 export default {openEditFileModal};

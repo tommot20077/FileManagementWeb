@@ -87,7 +87,7 @@ class FolderTree {
         }
 
         folders.forEach((folder) => {
-            if (!folder.filename || !folder.isFolder || folder.id === this.file.id || folder.id === this.file.parentFolderId) {
+            if (!folder.filename || folder.fileType !== 'FOLDER' || folder.id === this.file.id || folder.id === this.file.parentFolderId) {
                 return;
             }
 
@@ -203,7 +203,7 @@ class FolderTree {
                 shareUserIds: this.file.shareUsers
             }
             let url;
-            if (this.file.isFolder) {
+            if (this.file.fileType === 'FOLDER') {
                 url = '/api/folders';
             } else {
                 url = '/api/files';

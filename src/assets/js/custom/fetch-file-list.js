@@ -67,7 +67,7 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
             if (!isRecycle) {
                 nameLink.addEventListener('click', async (e) => {
                     e.preventDefault();
-                    if (file.isFolder) {
+                    if (file.fileType === 'FOLDER') {
                         await fetchFileList(file.id);
                     } else if (file.fileType === 'ONLINE_DOCUMENT') {
                         await openEditor(file);
@@ -92,7 +92,7 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
             const sizeTd = document.createElement('td');
             const ownerTd = document.createElement('td');
             ownerTd.textContent = username;
-            if (!file.isFolder) {
+            if (file.fileType !== 'FOLDER') {
                 sizeTd.textContent = formatFileSize(file.fileSize);
             } else {
                 sizeTd.textContent = '-';
@@ -166,7 +166,7 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
             const chooseActions = parseInt(String(folderId)) === -4 ? recycleActions : normalActions;
 
             chooseActions.forEach(action => {
-                if (file.isFolder && (action.text === '預覽' || action.text === '下載')) {
+                if (file.fileType === 'FOLDER' && (action.text === '預覽' || action.text === '下載')) {
                     return;
                 }
                 if (file.fileType === 'ONLINE_DOCUMENT' && action.text === '下載') {
@@ -204,7 +204,7 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
                 } else if (action.text === '移動到回收桶') {
                     actionItem.addEventListener('click', async (e) => {
                         e.preventDefault();
-                        await removeFile(file.id, file.isFolder);
+                        await removeFile(file.id, file.fileType === 'FOLDER');
                     });
                 } else if (action.text === '重新命名') {
                     actionItem.addEventListener('click', async (e) => {
@@ -226,12 +226,12 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
                 } else if (action.text === '永久刪除') {
                     actionItem.addEventListener('click', async (e) => {
                         e.preventDefault();
-                        await deleteFile(file.id, file.isFolder);
+                        await deleteFile(file.id, file.fileType === 'FOLDER');
                     });
                 } else if (action.text === '還原') {
                     actionItem.addEventListener('click', async (e) => {
                         e.preventDefault();
-                        await restoreFile(file.id, file.isFolder);
+                        await restoreFile(file.id, file.fileType === 'FOLDER');
                     });
                 }
 
@@ -368,7 +368,7 @@ async function removeFile(fileId, isFolder) {
             $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         });
     } else {
-        apiConnector.delete(`/api/files/remove/${fileId}`).then(response => {
+        apiConnector.post(`/api/files/remove/${fileId}`).then(response => {
             const status = response.data.status;
             if (status === 200) {
                 fetchFileList(currentFolderId).then();
@@ -437,7 +437,7 @@ function getLabelName(file) {
     let name = file.filename;
     let label = document.createElement('i')
     label.classList.add('mdi', 'me-2', "text-primary", "mdi-24px");
-    if (file.isFolder) {
+    if (file.fileType === 'FOLDER') {
         label.classList.add('mdi-folder');
     } else if (file.fileType === 'ONLINE_DOCUMENT') {
         label.classList.add('mdi-file-document-edit');

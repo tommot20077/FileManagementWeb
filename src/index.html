@@ -24,7 +24,7 @@
 
     </head>
 
-    <body class="loading" data-layout-color="light" data-leftbar-theme="dark" data-layout-mode="fluid" data-rightbar-onstart="true">
+    <body class="loading">
         <!-- Begin page -->
         <div class="wrapper">
             <!-- ========== Left Sidebar Start ========== -->
@@ -619,7 +619,7 @@
                                                             <label for="editFileName" class="col-2 col-form-label">名稱</label>
                                                             <div class="col-10">
                                                                 <input type="text" class="form-control" id="editFileName" placeholder="檔案名稱">
-                                                                <input type="hidden" id="editFileId"> <input type="hidden" id="isFolder"> <input type="hidden"
+                                                                <input type="hidden" id="editFileId"> <input type="hidden" id="fileType"> <input type="hidden"
                                                                                                                                                  id="shareUsers">
                                                                 <input type="hidden" id="isStar"> <input type="hidden" id="parentFolderId">
                                                             </div>
@@ -650,7 +650,8 @@
 
 
                                             <div class="email-menu-list mt-3">
-                                                <a href="/index"
+                                                <a href="javascript:void(0);"
+                                                   id='index-btn'
                                                    class="list-group-item border-0"><i class="mdi mdi-folder-outline font-18 align-middle me-2"></i>我的 文件</a>
                                                 <a href="javascript:void(0);"
                                                    class="list-group-item border-0 disabled"><i class="mdi mdi-google-drive font-18 align-middle me-2"></i>Google Drive</a>
@@ -658,11 +659,14 @@
                                                    class="list-group-item border-0 disabled"><i class="mdi mdi-dropbox font-18 align-middle me-2"></i>Dropbox</a>
                                                 <a href="javascript:void(0);"
                                                    class="list-group-item border-0 disabled"><i class="mdi mdi-share-variant font-18 align-middle me-2"></i>與 我分享</a>
-                                                <a href="/web/folder/star"
+                                                <a href="javascript:void(0);"
+                                                   id='stars-btn'
                                                    class="list-group-item border-0"><i class="mdi mdi-star-outline font-18 align-middle me-2"></i>加星標</a> <a
-                                                href="/web/folder/recently"
+                                                href="javascript:void(0);"
+                                                id='recently-btn'
                                                 class="list-group-item border-0"><i class="mdi mdi-clock-outline font-18 align-middle me-2"></i>最近</a>
-                                                <a href="/web/folder/recycle"
+                                                <a href="javascript:void(0);"
+                                                   id='recycle-btn'
                                                    class="list-group-item border-0"><i class="mdi mdi-delete font-18 align-middle me-2"></i>已刪除 文件</a>
                                             </div>
 
