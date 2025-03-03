@@ -27,7 +27,7 @@ export default defineConfig({
         }],
         proxy: {
             '/api': {
-                target: config.apiUrl,
+                target: config.backendUrl,
                 changeOrigin: true,
             },
             '/ws': {
@@ -37,7 +37,7 @@ export default defineConfig({
             }
         },
         host: config.prod ? '0.0.0.0' : 'localhost',
-        port: config.prod ? 5174 : 5173,
+        port: config.prod ? 5180 : 5173,
     },
     build: {
         rollupOptions: {
@@ -49,5 +49,4 @@ export default defineConfig({
         },
         outDir: '../dist'
     },
-    publicDir: 'assets',
 });

@@ -1,7 +1,7 @@
 import hljs from 'highlight.js';
 import Quill, {Delta} from "quill";
-import apiConnector from "./assets/js/custom/api-connector.js";
-import {buttonLoading} from "./assets/js/custom/component.js";
+import apiConnector from "./api-connector.js";
+import {buttonLoading} from "./component.js";
 import {logout} from "./logout-main.js";
 
 let fileId = null;

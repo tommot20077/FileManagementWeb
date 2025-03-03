@@ -1,13 +1,13 @@
-import './assets/js/custom/api-connector.js';
-import './assets/js/custom/chunk-upload-manager.js';
-import editResource from './assets/js/custom/edit-resource.js';
-import fetchFileListModule from './assets/js/custom/fetch-file-list.js';
-import {formatFileSize, reservedPath} from './assets/js/custom/tool.js';
-import uploadContainer from './assets/js/custom/upload-container.js';
-import uploadManager from './assets/js/custom/upload-manager.js';
-import {WSConnector} from './assets/js/custom/ws-connectoer.js';
-import {getUserInfo} from "./assets/js/custom/user-info.js";
-import fetchFileList from "./assets/js/custom/fetch-file-list.js";
+import './api-connector.js';
+import './chunk-upload-manager.js';
+import editResource from './edit-resource.js';
+import fetchFileListModule from './fetch-file-list.js';
+import {formatFileSize, reservedPath} from './tool.js';
+import uploadContainer from './upload-container.js';
+import uploadManager from './upload-manager.js';
+import {WSConnector} from './ws-connectoer.js';
+import {getUserInfo} from "./user-info.js";
+import fetchFileList from "./fetch-file-list.js";
 import {logout} from "./logout-main.js";
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -1,35 +1,44 @@
-import config from "../config.js";
+import config from "../../../../config.js";
 
 
 export async function loadFilePreview(fileId) {
     try {
-        const response = await fetch(`${config.apiUrl}/api/files/${fileId}?action=preview`, {
+        let element;
+        const container = document.getElementById('previewContainer');
+        const loadingProgressBar = document.getElementById('loading-progress-bar');
+        const response = await fetch(`${config.backendUrl}/api/files/${fileId}?action=preview`, {
             method: 'GET',
             credentials: 'include'
         });
-        if (!response.ok) {
-            new Error('無法加載檔案');
-        }
 
+        if (!response.ok) {
+            const errorData = await response.json();
+            container.innerHTML = "";
+            element = document.createElement("p");
+            element.textContent = errorData.message;
+            container.appendChild(element);
+            return
+        }
         const reader = response.body.getReader();
         const chunks = [];
         let receivedLength = 0;
-
+        const contentLength = response.headers.get('Content-Length');
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
             chunks.push(value);
             receivedLength += value.length;
+            loadingProgressBar.style.width = (receivedLength/contentLength) * 100 + "%";
         }
-        let type = response.headers.get('Content-Type');
+        loadingProgressBar.style.width = "100%";
+
+        let type = response.headers.get('Content-Type').toLowerCase();
         const blob = new Blob(chunks, { type: type });
 
         const url = URL.createObjectURL(blob);
 
-        const container = document.getElementById('previewContainer');
-        container.innerHTML = '';
-        let element;
+        container.innerHTML = "";
         if (type.startsWith("image")) {
             element = document.createElement("img");
             element.src = url;

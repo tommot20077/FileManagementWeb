@@ -4,40 +4,29 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>檔案預覽</title>
-        <style>
-            body {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-                background-color: #1a1a1a;
-                margin: 0;
-            }
-            .preview-container {
-                width: 90vw;
-                height: 90vh;
-                background: white;
-                border-radius: 8px;
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                padding: 10px;
-                overflow: hidden;
-            }
-            img, video, iframe {
-                max-width: 100%;
-                max-height: 100%;
-                object-fit: contain;
-            }
-        </style>
+        <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css"/>
+        <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" id="app-style"/>
+        <link href='assets/css/custom/preview.css' rel="stylesheet">
     </head>
     <body>
         <div class="preview-container" id="previewContainer">
-            <p>載入中...</p>
+            <div class="loading-container">
+                <div class="spinner-border avatar-md" role="status"></div>
+                <div class="progress-container progress m-2 progress-xl"  style="width: 200px; height: 20px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info"
+                         role="progressbar"
+                         style="width: 0%" id='loading-progress-bar'>
+                    </div>
+                </div>
+            </div>
         </div>
 
+
+        <script src="./assets/js/vendor.min.js"></script>
+        <script src="./assets/js/app.min.js"></script>
+        <script src="./assets/js/custom/preview-main.js" type='module'></script>
     </body>
+
+
 </html>
 
-<script type="module" src="preview-main.js"></script>

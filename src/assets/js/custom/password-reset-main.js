@@ -1,5 +1,5 @@
-import apiConnector from "./assets/js/custom/api-connector.js";
-import {buttonLoading} from "./assets/js/custom/component.js";
+import apiConnector from "./api-connector.js";
+import {buttonLoading} from "./component.js";
 
 let mail = null
 let password = null

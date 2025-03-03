@@ -2,12 +2,24 @@ import axios from 'axios';
 import Config from "../../../../config";
 
 const apiConnector = axios.create({
-    baseURL: Config.apiUrl,
+    baseURL: Config.backendUrl,
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
     }
 });
+
+export function createWebConnector(headerName, token) {
+    return axios.create({
+        baseURL: Config.backendUrl,
+        withCredentials: true,
+        headers: {
+            'Content-Type': 'application/json',
+            [headerName]: token
+        }
+    });
+}
+
 
 apiConnector.interceptors.response.use(
     response => response,

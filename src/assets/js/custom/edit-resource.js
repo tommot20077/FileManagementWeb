@@ -1,11 +1,13 @@
 import apiConnector from "./api-connector.js";
 import {currentFolderId, fetchFileList} from "./fetch-file-list.js";
+import {buttonLoading} from "./component.js";
 
 document.getElementById("add-new-folder").addEventListener('click', () => {
     document.getElementById("addFolderModal").classList.remove("hidden");
 });
 
 document.getElementById("addNewFolder").addEventListener('click', () => {
+        const btn = document.getElementById("addNewFolder");
         const folderName = document.getElementById('newFolderName').value.trim();
         const errorContainer = document.getElementById('newFolderNameError');
         errorContainer.textContent = '';
@@ -13,6 +15,8 @@ document.getElementById("addNewFolder").addEventListener('click', () => {
             errorContainer.textContent = '資料夾名稱不能為空。';
             return;
         }
+
+        buttonLoading(btn, true, '處理中...');
 
         try {
             const parentFolderId = currentFolderId === 0 ? null : currentFolderId;
@@ -32,6 +36,8 @@ document.getElementById("addNewFolder").addEventListener('click', () => {
         } catch (error) {
             $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
             errorContainer.textContent = error.response?.data?.message || '發生錯誤，請稍後再試。';
+        } finally {
+            buttonLoading(btn, false, '新增');
         }
 
     }
@@ -41,6 +47,7 @@ document.getElementById("cancelAddNewFolder").addEventListener('click', () => {
     document.getElementById('newFolderName').value = '';
     document.getElementById("addFolderModal").classList.add("hidden");
     document.getElementById('newFolderNameError').textContent = '';
+    buttonLoading(document.getElementById("addNewFolder"), false, '新增');
 });
 
 
@@ -81,6 +88,8 @@ document.getElementById("saveEditFile").addEventListener('click', async () => {
     const parentFolderId = document.getElementById("parentFolderId").value;
     const errorContainer = document.getElementById('editFileNameError');
 
+    const btn = document.getElementById("saveEditFile");
+
     // 清除之前的錯誤訊息
     errorContainer.textContent = '';
 
@@ -89,6 +98,8 @@ document.getElementById("saveEditFile").addEventListener('click', async () => {
         return;
     }
 
+
+    buttonLoading(btn, true, '處理中...');
     const url = (fileType === 'FOLDER') ? '/api/folders' : '/api/files';
 
     try {
@@ -110,6 +121,8 @@ document.getElementById("saveEditFile").addEventListener('click', async () => {
     } catch (error) {
         $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         errorContainer.textContent = error.response?.data?.message || '發生錯誤，請稍後再試。';
+    } finally {
+        buttonLoading(btn, false, '儲存');
     }
 });
 
@@ -118,7 +131,7 @@ document.getElementById("cancelEditFile").addEventListener('click', (e) => {
     e.preventDefault();
     cleanFileInformation();
     document.getElementById("editFileModal").classList.add("hidden");
-
+    buttonLoading(document.getElementById("saveEditFile"), false, '儲存');
 });
 
 
@@ -128,7 +141,8 @@ document.getElementById("addNewOnlineDocument").addEventListener('click', () => 
         $.NotificationApp.send("檔案名稱不能為空", "", "bottom-right", "rgba(0,0,0,0.2)", "warning");
         return;
     }
-
+    const btn = document.getElementById("addNewOnlineDocument");
+    buttonLoading(btn, true, '處理中...');
 
     apiConnector.post('/api/docs/upload', {
         filename: name,
@@ -146,6 +160,8 @@ document.getElementById("addNewOnlineDocument").addEventListener('click', () => 
         throw new Error(response.data.message || '新增檔案失敗。');
     }).catch(error => {
         $.NotificationApp.send(`檔案建立失敗:${error.response?.data?.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+    }).finally(() => {
+        buttonLoading(btn, false, '新增');
     });
 });
 

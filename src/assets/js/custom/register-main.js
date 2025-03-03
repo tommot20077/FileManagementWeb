@@ -1,5 +1,5 @@
-import {buttonLoading} from "./assets/js/custom/component.js";
-import apiConnector from "./assets/js/custom/api-connector.js";
+import {buttonLoading} from "./component.js";
+import apiConnector from "./api-connector.js";
 
 document.getElementById("sign-up-form").addEventListener("submit", function(event) {
     if (!this.checkValidity()) {

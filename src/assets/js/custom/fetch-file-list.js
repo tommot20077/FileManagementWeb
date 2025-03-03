@@ -289,7 +289,7 @@ async function getFileResource(fileId, action) {
         if (action === "preview") {
             window.open(`/preview?id=${fileId}`, '_blank');
         } else {
-            const response = await fetch(`${config.apiUrl}/api/files/${fileId}?action=download`, {
+            const response = await fetch(`${config.backendUrl}/api/files/${fileId}?action=download`, {
                 method: 'GET',
                 credentials: 'include'
             });

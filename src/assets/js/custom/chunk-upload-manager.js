@@ -176,7 +176,7 @@ class ChunkUploadManager {
                     md5: currentChunkMd5
                 };
 
-                apiConnector.post(`${Config.apiUrl}/api/files/upload-chunk`, uploadChunkDTO)
+                apiConnector.post(`${Config.backendUrl}/api/files/upload-chunk`, uploadChunkDTO)
                             .then(response => {
                                 const data = response.data.data;
                                 if (data.isSuccess) {

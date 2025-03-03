@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropzoneElement = document.getElementById('dropzone');
     if (dropzoneElement && !dropzoneElement.dropzone) {
         myDropzone = new Dropzone(dropzoneElement, {
-            url: `${Config.apiUrl}/api/files/upload`,
+            url: `${Config.backendUrl}/api/files/upload`,
             autoProcessQueue: false, // 禁用自動上傳
             previewsContainer: "#file-previews",
             previewTemplate: document.querySelector("#uploadPreviewTemplate").innerHTML,
