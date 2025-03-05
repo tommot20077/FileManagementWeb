@@ -382,6 +382,7 @@
                             <i class="mdi mdi-menu"></i>
                         </button>
                         <div class="app-search dropdown d-none d-lg-block">
+                            <!--
                             <form>
                                 <div class="input-group">
                                     <input type="text" class="form-control dropdown-toggle" placeholder="搜尋..." id="top-search">
@@ -389,6 +390,7 @@
                                     <button class="input-group-text btn-primary" type="submit">搜尋</button>
                                 </div>
                             </form>
+                            -->
 
                             <div class="dropdown-menu dropdown-menu-animated dropdown-lg" id="search-dropdown">
                                 <!-- item-->
@@ -638,16 +640,6 @@
                                                     </form>
                                                 </div>
                                             </div>
-                                            <!-- 移動檔案的模態框 -->
-                                            <div id="moveFileModal" class="modal-overlay hidden">
-                                                <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
-                                                    <h4>移動檔案/資料夾</h4>
-                                                    <div id="moveFileContainer">
-
-                                                    </div>
-                                                </div>
-                                            </div>
-
 
                                             <div class="email-menu-list mt-3">
                                                 <a href="javascript:void(0);"
@@ -689,9 +681,92 @@
                                             <div class="d-lg-flex justify-content-between align-items-center">
                                                 <div class="app-search">
                                                     <form>
-                                                        <div class="mb-2 position-relative">
-                                                            <input type="text" class="form-control" placeholder="搜尋文件...">
-                                                            <span class="mdi mdi-magnify search-icon"></span>
+                                                        <div class="input-group mb-2">
+                                                            <div class="d-flex align-items-center">
+                                                                <input type="text"
+                                                                       class="form-control dropdown-toggle me-2"
+                                                                       placeholder="搜尋..."
+                                                                       id="base-file-search-keyword"> <span class="mdi mdi-magnify app-search search-icon me-2"></span>
+                                                                <div class="btn-group">
+                                                                    <button type="button" class="btn btn-info" style="width: 100px" id='base-search-btn'>搜尋
+                                                                    </button>
+                                                                    <button type="button"
+                                                                            class="btn btn-info dropdown-toggle-split dropdown-toggle"
+                                                                            data-bs-toggle="offcanvas"
+                                                                            data-bs-target="#advance-search"
+                                                                            aria-controls="offcanvasTop"
+                                                                            aria-haspopup="true"
+                                                                            aria-expanded="false"></button>
+                                                                    <div class="offcanvas offcanvas-start"
+                                                                         tabindex="-1"
+                                                                         id="advance-search">
+                                                                        <div class="offcanvas-header">
+                                                                            <h5 id="offcanvasTopLabel">進階搜尋</h5>
+                                                                            <button type="button"
+                                                                                    id = 'close-advance-search-btn'
+                                                                                    class="btn-close text-reset"
+                                                                                    data-bs-dismiss="offcanvas"
+                                                                                    aria-label="Close"></button>
+                                                                        </div>
+                                                                        <div class="offcanvas-body">
+                                                                            <form class="form-horizontal">
+                                                                                <div class="row mb-3">
+                                                                                    <label for="advance-keyword" class="col-3 col-form-label">關鍵字</label>
+                                                                                    <div class="col-9">
+                                                                                        <input type="text"
+                                                                                               class="form-control"
+                                                                                               id="advance-keyword"
+                                                                                               placeholder="關鍵字...">
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="row mb-3">
+                                                                                    <label for="advance-folder" class="col-3 col-form-label">指定資料夾</label>
+                                                                                    <div class="col-6">
+                                                                                        <input type="text"
+                                                                                               class="form-control"
+                                                                                               id="advance-folder"
+                                                                                               readonly
+                                                                                               disabled>
+                                                                                    </div>
+                                                                                    <div class="col-3">
+                                                                                        <button type="button"
+                                                                                                class="btn btn-info"
+                                                                                                id='choose-folder-btn'>選擇
+                                                                                        </button>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="row mb-3">
+                                                                                    <label for="choose-type" class="col-3 col-form-label">指定類型</label>
+                                                                                    <div class="col-9">
+                                                                                        <select id='choose-type'
+                                                                                                class="select2 form-control select2-multiple"
+                                                                                                data-toggle="select2"
+                                                                                                multiple="multiple"
+                                                                                                data-placeholder="">
+                                                                                            <option value="IMAGE">照片</option>
+                                                                                            <option value="VIDEO">影片</option>
+                                                                                            <option value="MUSIC">音樂</option>
+                                                                                            <option value="DOCUMENT">文件</option>
+                                                                                            <option value="ZIP">壓縮檔</option>
+                                                                                            <option value="ONLINE_DOCUMENT">線上文件</option>
+                                                                                            <option value="FOLDER">資料夾</option>
+                                                                                            <option value="OTHER">其他</option>
+
+                                                                                        </select>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="row mb-3" id='calendar-range'>
+                                                                                </div>
+
+                                                                                <div class="col mb-3">
+                                                                                    <button type="button" class="btn btn-info" id ="advance-search-btn">搜尋</button>
+                                                                                    <button id='advance-reset-btn' type="reset" class="btn btn-secondary">重設</button>
+                                                                                </div>
+                                                                            </form>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </form>
                                                 </div>
@@ -813,6 +888,15 @@
                             </div>
                         </div>
                     </div>
+                    <!-- 移動檔案的模態框 -->
+                    <div id="moveFileModal" class="modal-overlay hidden" style="z-index: 1050;">
+                        <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                            <h4>選擇資料夾</h4>
+                            <div id="moveFileContainer">
+
+                            </div>
+                        </div>
+                    </div>
 
                 </div> <!-- content -->
 
@@ -833,7 +917,6 @@
                     </div>
                 </footer>
                        <!-- 結束 Footer -->
-
             </div>
 
             <!-- ============================================================== -->
@@ -925,7 +1008,6 @@
                         <button class="btn btn-primary" id="resetBtn">重置為默認</button>
                     </div>
                 </div> <!-- end padding-->
-
             </div>
         </div>
 
@@ -950,11 +1032,10 @@
         <script src="./assets/js/vendor/apexcharts.min.js"></script>
         <script src="./assets/js/vendor/jquery-jvectormap-1.2.2.min.js"></script>
         <script src="./assets/js/vendor/jquery-jvectormap-world-mill-en.js"></script>
-        <!-- third party js ends -->
 
-        <!-- demo app -->
-        <!--<script src="./assets/js/pages/demo.dashboard.js"></script>-->
-        <!-- end demo js-->
+        <script src="assets/js/vendor/handlebars.min.js"></script>
+        <script src="assets/js/vendor/typeahead.bundle.min.js"></script>
+
     </body>
 
     <!-- Mirrored from coderthemes.com/hyper/saas/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 29 Jul 2022 10:20:07 GMT -->

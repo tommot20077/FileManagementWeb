@@ -63,3 +63,7 @@
 .breadcrumb-item a:hover {
   text-decoration: underline;
 }
+
+.show-calendar  {
+  z-index: 9999 !important;
+}

@@ -9,29 +9,14 @@ import {getUserInfo} from "./user-info.js";
 export let currentFolderId = 0;
 const breadcrumb = document.getElementById('breadcrumb');
 
-export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pageSize, type) {
+export async function fetchFileList(folderId = 0, updateUrl = true, filter = {}, isSearch = false) {
     currentFolderId = folderId;
-
     let response;
     try {
-        let url = `/api/folders/${folderId}`
-        let params = "?";
+        disableButton(folderId, isSearch);
+        let url = isSearch ? `/api/files/search` : `/api/folders/${folderId}`;
 
-        if (pageSize) {
-            params += `&size=${pageSize}`;
-        }
-
-        if (type) {
-            params += `&type=${type}`;
-        }
-        if (page) {
-            params += `&page=${page}`;
-        }
-        if (params !== "?") {
-            params = params.replace("?&", "?");
-            url += params;
-        }
-        response = await apiConnector.get(url);
+        response = await apiConnector.get(formatUrl(url, filter));
         const files = response.data.data.files.data;
         const tbody = document.querySelector('.table-responsive tbody');
         const username = response.data.data.username;
@@ -235,7 +220,6 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
                     });
                 }
 
-
                 dropdownMenu.appendChild(actionItem);
             });
 
@@ -246,7 +230,7 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
             tbody.appendChild(tr);
         });
 
-        updatePaginationControls(currentPage, totalPages, pageSize, type);
+        updatePaginationControls(currentPage, totalPages, null, filter, isSearch);
 
         if (updateUrl) {
             let anotherPathname = String(folderId);
@@ -255,25 +239,11 @@ export async function fetchFileList(folderId = 0, page = 1, updateUrl = true, pa
                 anotherPathname = reservedPath[String(folderId)];
             }
 
-            let newUrl = `/web/folder/${anotherPathname}`;
-            let paramsName = {}
-
-            if (params !== "?") {
-                newUrl += params;
-            }
-
-            if (type) {
-                paramsName.type = type;
-            }
-            if (pageSize) {
-                paramsName.size = pageSize;
-            }
-            if (page) {
-                paramsName.page = page;
-            }
-            window.history.pushState(paramsName, '', newUrl);
+            let newUrl = isSearch ? `/web/files/search` : `/web/folder/${anotherPathname}`;
+            window.history.pushState(filter, '', formatUrl(newUrl, filter));
         }
     } catch (error) {
+        console.error(error);
         $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
 }
@@ -462,5 +432,49 @@ function getLabelName(file) {
     }
     return name;
 }
+function formatUrl(url, filter) {
+    let params = "?";
 
+    if (filter.size) {
+        params += `&size=${filter.size}`;
+    }
+
+    if (filter.type) {
+        params += `&type=${filter.type}`;
+    }
+
+    if (filter.page > 1) {
+        params += `&page=${filter.page}`;
+    }
+
+    if (filter.keyword) {
+        params += `&keyword=${filter.keyword}`;
+    }
+
+    if (filter.folder) {
+        params += `&folder=${filter.folder}`;
+    }
+
+    if (filter.start) {
+        params += `&start=${filter.start}`;
+    }
+
+    if (filter.end) {
+        params += `&end=${filter.end}`;
+    }
+
+    if (params !== "?") {
+        params = params.replace("?&", "?");
+        url += params;
+    }
+    return url;
+}
+
+function disableButton(folderId, isSearch) {
+    if (folderId < 0 || isSearch) {
+        document.getElementById("add-new-file-button").setAttribute("disabled", "true");
+    } else {
+        document.getElementById("add-new-file-button").removeAttribute("disabled");
+    }
+}
 export default {fetchFileList, currentFolderId};

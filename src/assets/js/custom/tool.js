@@ -13,6 +13,7 @@ export const reservedPath = {
     "-3": "recently",
     "-4": "recycle"
 }
+
 function formatFileSize(size) {
     if (typeof size !== 'number' || isNaN(size)) {
         return 'Invalid size';
@@ -25,12 +26,13 @@ function formatFileSize(size) {
     }
     return `${size.toFixed(2)} ${unit[unitIndex]}`;
 }
-function updatePaginationControls(currentPage, totalPages, pageSize, type, fatherDocument) {
+
+function updatePaginationControls(currentPage, totalPages, fatherDocument, filter = {}, isSearch = false) {
     let paginationContainer;
     if (fatherDocument) {
         paginationContainer = fatherDocument;
     } else {
-        paginationContainer= document.querySelector('.pagination');
+        paginationContainer = document.querySelector('.pagination');
     }
 
     paginationContainer.innerHTML = '';
@@ -44,7 +46,12 @@ function updatePaginationControls(currentPage, totalPages, pageSize, type, fathe
         a.classList.add('page-link');
         a.href = 'javascript:void(0);';
         a.textContent = page;
-        a.addEventListener('click', () => fetchFileList(currentFolderId, page, true, pageSize, type));
+        a.addEventListener('click', () => {
+            if (page !== currentPage) {
+                filter.page = page;
+                fetchFileList(currentFolderId, true, filter, isSearch)
+            }
+        });
 
         li.appendChild(a);
         return li;
@@ -61,7 +68,10 @@ function updatePaginationControls(currentPage, totalPages, pageSize, type, fathe
     prevA.setAttribute('aria-label', 'Previous');
     prevA.innerHTML = '<span aria-hidden="true">&laquo;</span>';
     prevA.addEventListener('click', () => {
-        if (currentPage > 1) fetchFileList(currentFolderId, currentPage - 1, true);
+        if (currentPage > 1) {
+            filter.page = currentPage - 1;
+            fetchFileList(currentFolderId, true, filter, isSearch)
+        }
     });
 
     prevLi.appendChild(prevA);
@@ -83,10 +93,21 @@ function updatePaginationControls(currentPage, totalPages, pageSize, type, fathe
     nextA.setAttribute('aria-label', 'Next');
     nextA.innerHTML = '<span aria-hidden="true">&raquo;</span>';
     nextA.addEventListener('click', () => {
-        if (currentPage < totalPages) fetchFileList(currentFolderId, currentPage + 1, true);
+        if (currentPage < totalPages) {
+            filter.page = currentPage + 1;
+            fetchFileList(currentFolderId, true, filter, isSearch)
+        }
     });
 
     nextLi.appendChild(nextA);
     paginationContainer.appendChild(nextLi);
 }
-export {formatFileSize, updatePaginationControls};
+
+function convertToISOFormat(dateStr) {
+    if (!dateStr || dateStr.trim().length === 0) return null;
+    const formattedDate = dateStr.replace(/\s+/g, '').replace(/\//g, '-');
+    const date = new Date(formattedDate);
+    return date.toISOString().split("T")[0] + "T00:00:00";
+}
+
+export {formatFileSize, updatePaginationControls, convertToISOFormat};

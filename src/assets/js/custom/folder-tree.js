@@ -3,9 +3,11 @@ import {currentFolderId, fetchFileList} from "./fetch-file-list.js";
 import {updatePaginationControls} from "./tool.js";
 
 class FolderTree {
-    constructor(file) {
+    constructor(file, targetElement = null, isSearch = false) {
         this.container = document.getElementById("moveFileContainer");
         this.file = file;
+        this.isSearch = isSearch;
+        this.targetElement = targetElement;
         this.selectedFolderId = null;
         this.currentFolders = [];
         this.folderCache = {};
@@ -31,7 +33,7 @@ class FolderTree {
         });
         this.container.appendChild(ul);
 
-        this.addActionButtons();
+        this.addActionButtons(this.isSearch, this.targetElement);
 
     }
 
@@ -49,7 +51,7 @@ class FolderTree {
 
 
     async generateFolderList(folderId, parentElement) {
-        parentElement.innerHTML = '';
+        parentElement.innerHTML = ''
 
         const urlParams = new URLSearchParams(window.location.search);
         let currentPage = parseInt(urlParams.get("page")) || 1;
@@ -87,7 +89,7 @@ class FolderTree {
         }
 
         folders.forEach((folder) => {
-            if (!folder.filename || folder.fileType !== 'FOLDER' || folder.id === this.file.id || folder.id === this.file.parentFolderId) {
+            if (!folder.filename || folder.fileType !== 'FOLDER' || this.file && (folder.id === this.file.id || folder.id === this.file.parentFolderId)) {
                 return;
             }
 
@@ -111,7 +113,7 @@ class FolderTree {
         });
         await this.createPaginationControls(parentElement).then((paginationUl) => {
             let showPage = totalPages === 0 ? 1 : totalPages
-            updatePaginationControls(currentPage, showPage, null, null, paginationUl);
+            updatePaginationControls(currentPage, showPage, paginationUl);
         });
     }
 
@@ -181,20 +183,30 @@ class FolderTree {
         });
     }
 
-    addActionButtons() {
+    addActionButtons(isSearch, targetElement) {
         const buttonContainer = document.createElement('div');
         buttonContainer.className = 'action-buttons mt-3';
-        buttonContainer.innerHTML = `
+        if (isSearch) {
+            buttonContainer.innerHTML = `
+            <button class="btn btn-success me-2" id="chooseButton" style="display: inline-block;">確定當前資料夾</button>
+            <button class="btn btn-info me-2" id="resetButton" style="display: inline-block;">重置</button>
+            <button class="btn btn-secondary" id="cancelButton" style="display: inline-block;">取消</button>
+        `;
+        } else {
+            buttonContainer.innerHTML = `
             <button class="btn btn-primary me-2" id="moveButton" style="display: inline-block;">移動</button>
             <button class="btn btn-secondary" id="cancelButton" style="display: inline-block;">取消</button>
         `;
+        }
 
         this.container.appendChild(buttonContainer);
 
         const moveButton = document.getElementById('moveButton');
         const cancelButton = document.getElementById('cancelButton');
+        const chooseButton = document.getElementById('chooseButton');
+        const resetButton = document.getElementById('resetButton');
 
-        moveButton.addEventListener('click', async () => {
+        moveButton?.addEventListener('click', async () => {
             const FolderId = this.selectedFolderId === 0 ? null : this.selectedFolderId;
             const data = {
                 fileId: this.file.id,
@@ -218,16 +230,25 @@ class FolderTree {
                 $.NotificationApp.send(`移動失敗:${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
             }
         });
+        chooseButton?.addEventListener('click', async () => {
+            targetElement.value = this.selectedFolderId;
+            closeMoveFileModal();
+        });
 
         cancelButton.addEventListener('click', () => {
+            closeMoveFileModal(false);
+        });
+
+        resetButton?.addEventListener('click', () => {
+            targetElement.value = null;
             closeMoveFileModal(false);
         });
     }
 }
 
 
-export function openMoveFileModal(file) {
-    new FolderTree(file);
+export function openMoveFileModal(file = null, targetElement = null, isSearch = false) {
+    new FolderTree(file, targetElement, isSearch);
     document.getElementById('moveFileModal').classList.remove("hidden");
 }
 
