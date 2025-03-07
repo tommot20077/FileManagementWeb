@@ -1,4 +1,4 @@
-import apiConnector from "./api-connector.js";
+import webConnector from "./web-connector.js";
 import {buttonLoading} from "./component.js";
 
 let mail = null
@@ -17,7 +17,7 @@ document.getElementById('reset-password-btn').addEventListener('click', function
     mail = document.getElementById('email').value;
 
     buttonLoading(this, true, "處理中...");
-    apiConnector.post("/api/guest/sendResetPasswordMail", JSON.stringify({email: mail})).then((response) => {
+    webConnector.post("/guest/sendResetPasswordMail", JSON.stringify({email: mail})).then((response) => {
         if (response.status === 200) {
             $.NotificationApp.send(`驗證碼已發送至 ${mail}`, "", "bottom-right", "rgba(0,0,0,0.2)", "success");
             buttonLoading(this, false, "重置密碼");
@@ -64,7 +64,7 @@ document.getElementById('reset-password').addEventListener('click', function (ev
         "newPassword": password,
         "confirmPassword": passwordConfirm
     }
-    apiConnector.put('/api/guest/resetPassword', JSON.stringify(data)).then((response) => {
+    webConnector.put('/guest/resetPassword', JSON.stringify(data)).then((response) => {
         if (response.status === 200) {
             $.NotificationApp.send(`密碼重設成功`, "", "bottom-right", "rgba(0,0,0,0.2)", "success");
 

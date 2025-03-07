@@ -6,7 +6,7 @@ export async function loadFilePreview(fileId) {
         let element;
         const container = document.getElementById('previewContainer');
         const loadingProgressBar = document.getElementById('loading-progress-bar');
-        const response = await fetch(`${config.backendUrl}/api/files/${fileId}?action=preview`, {
+        const response = await fetch(`${config.backendUrl}/web/v1/files/${fileId}?action=preview`, {
             method: 'GET',
             credentials: 'include'
         });

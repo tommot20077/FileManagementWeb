@@ -1,6 +1,6 @@
 import hljs from 'highlight.js';
 import Quill, {Delta} from "quill";
-import apiConnector from "./api-connector.js";
+import webConnector from "./web-connector.js";
 import {buttonLoading} from "./component.js";
 import {logout} from "./logout-main.js";
 
@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    apiConnector.get(`api/docs/${fileId}`).then((response) => {
+    webConnector.get(`/docs/${fileId}`, {xsrfCookieName: "useless"}).then((response) => {
         if (response.data.status === 200) {
             const data = {ops: response.data.data.content.delta};
             quill.setContents(new Delta(data));
@@ -82,7 +82,7 @@ document.getElementById("update-btn").addEventListener("click", function () {
         content: {delta: quill.getContents().ops},
         editType: "EDIT_CONTENT"
     }
-    apiConnector.put("api/docs", JSON.stringify(data)).then((response) => {
+    webConnector.put("/docs", JSON.stringify(data)).then((response) => {
         if (response.data.status === 200) {
             $.NotificationApp.send("更新成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
             buttonLoading(doc, false, "更新");
@@ -100,7 +100,7 @@ async function getUserHistoryVersion () {
         $.NotificationApp.send("文件ID不存在", "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         return
     }
-    apiConnector(`/api/docs/history/${fileId}`).then((response) => {
+    webConnector.get(`/docs/history/${fileId}`, {xsrfCookieName: "useless"}).then((response) => {
         const data = response.data.data;
         data.data.forEach((content => {
             let historyList = document.getElementById("userHistoryList");
@@ -176,7 +176,7 @@ async function getUserHistoryVersion () {
             version: id,
             editType: "REVERT_HISTORY_RECORD"
         }
-        apiConnector.put('api/docs', JSON.stringify(data)).then((response) => {
+        webConnector.put('/docs', JSON.stringify(data)).then((response) => {
             if (response.data.status === 200) {
                 buttonLoading(this, false, "復原");
                 $.NotificationApp.send("還原成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
@@ -205,7 +205,7 @@ async function getUserHistoryVersion () {
             note: note
         }
 
-        apiConnector.put("/api/docs", JSON.stringify(data)).then((response) => {
+        webConnector.put("/docs", JSON.stringify(data)).then((response) => {
             if (response.data.status === 200) {
                 $.NotificationApp.send("建立版本成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
                 buttonLoading(this, false, "建立");

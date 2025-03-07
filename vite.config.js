@@ -26,7 +26,7 @@ export default defineConfig({
             to: '/mail_confirm.html'
         }],
         proxy: {
-            '/api': {
+            '/web/v1': {
                 target: config.backendUrl,
                 changeOrigin: true,
             },

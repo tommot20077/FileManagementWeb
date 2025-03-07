@@ -1,5 +1,5 @@
 import {buttonLoading} from "./component.js";
-import apiConnector, {createWebConnector} from "./api-connector.js";
+import webConnector from "./web-connector.js";
 
 document.getElementById("sign-in-form").addEventListener("submit", function (event) {
     event.preventDefault();
@@ -20,30 +20,19 @@ document.getElementById("sign-in-form").addEventListener("submit", function (eve
         username: username.value, password: password.value
     }
 
-    apiConnector.get("/api/guest/csrf/token").then(async (response) => {
+    webConnector.post("/guest/login", JSON.stringify(data)).then((response) => {
         if (response.data.status === 200) {
-            headerName = response.data.data.headerName;
-            csrfToken = response.data.data.token;
-            await createWebConnector(headerName, csrfToken).post("/web/guest/login", JSON.stringify(data)).then((response) => {
-                if (response.data.status === 200) {
-                    document.getElementById("user_token").innerHTML = `${response.data.data.token}`
-                    $.NotificationApp.send("登入成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
-                    document.getElementById("success-header-modal-button").click();
-                    buttonLoading(button, false, "登入");
-                } else {
-                    buttonLoading(button, false, "登入");
-                    $.NotificationApp.send(`登入失敗: ${response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
-                }
-            }).catch((error) => {
-                buttonLoading(button, false, "登入");
-                $.NotificationApp.send(`登入失敗: ${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
-            });
-            return;
+            document.getElementById("user_token").innerHTML = `${response.data.data.token}`
+            $.NotificationApp.send("登入成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
+            document.getElementById("success-header-modal-button").click();
+            buttonLoading(button, false, "登入");
+        } else {
+            buttonLoading(button, false, "登入");
+            $.NotificationApp.send(`登入失敗: ${response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         }
-        throw new Error(response.data.message);
     }).catch((error) => {
-        csrfToken = null;
-        $.NotificationApp.send(`獲取 CSRF Token 失敗: ${error}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        buttonLoading(button, false, "登入");
+        $.NotificationApp.send(`登入失敗: ${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     });
 });
 

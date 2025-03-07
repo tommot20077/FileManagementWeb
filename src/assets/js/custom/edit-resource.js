@@ -1,4 +1,4 @@
-import apiConnector from "./api-connector.js";
+import webConnector from "./web-connector.js";
 import {currentFolderId, fetchFileList} from "./fetch-file-list.js";
 import {buttonLoading} from "./component.js";
 
@@ -20,7 +20,7 @@ document.getElementById("addNewFolder").addEventListener('click', () => {
 
         try {
             const parentFolderId = currentFolderId === 0 ? null : currentFolderId;
-            apiConnector.post('/api/folders', {
+            webConnector.post('/folders', {
                 filename: folderName,
                 parentFolderId: parentFolderId,
                 shareUsers: []
@@ -100,10 +100,10 @@ document.getElementById("saveEditFile").addEventListener('click', async () => {
 
 
     buttonLoading(btn, true, '處理中...');
-    const url = (fileType === 'FOLDER') ? '/api/folders' : '/api/files';
+    const url = (fileType === 'FOLDER') ? '/folders' : '/files';
 
     try {
-        const response = await apiConnector.put(`${url}`, {
+        const response = await webConnector.put(`${url}`, {
             filename: newFileName,
             fileId: fileId,
             shareUsers: shareUsers,
@@ -144,7 +144,7 @@ document.getElementById("addNewOnlineDocument").addEventListener('click', () => 
     const btn = document.getElementById("addNewOnlineDocument");
     buttonLoading(btn, true, '處理中...');
 
-    apiConnector.post('/api/docs/upload', {
+    webConnector.post('/docs/upload', {
         filename: name,
         parentFolderId: currentFolderId === 0 ? null : currentFolderId,
     }).then(response => {

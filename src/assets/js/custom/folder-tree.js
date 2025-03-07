@@ -1,4 +1,4 @@
-import apiConnector from "./api-connector.js";
+import webConnector from "./web-connector.js";
 import {currentFolderId, fetchFileList} from "./fetch-file-list.js";
 import {updatePaginationControls} from "./tool.js";
 
@@ -44,7 +44,7 @@ class FolderTree {
             return this.folderCache[cacheKey];
         }
 
-        const response = await apiConnector.get(`/api/folders/${folderId}?page=${page}`);
+        const response = await webConnector.get(`/folders/${folderId}?page=${page}`, {xsrfCookieName: "useless"});
         this.folderCache[cacheKey] = response.data.data;
         return response.data.data;
     }
@@ -216,13 +216,13 @@ class FolderTree {
             }
             let url;
             if (this.file.fileType === 'FOLDER') {
-                url = '/api/folders';
+                url = '/folders';
             } else {
-                url = '/api/files';
+                url = '/files';
             }
 
             try {
-                const response = await apiConnector.put(`${url}`, data)
+                const response = await webConnector.put(`${url}`, data)
                 if (response.status === 200) {
                     closeMoveFileModal();
                 }

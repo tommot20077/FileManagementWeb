@@ -1,6 +1,6 @@
 import SparkMD5 from 'spark-md5';
 import Config from "../../../../config.js";
-import apiConnector from "./api-connector.js";
+import webConnector from "./web-connector.js";
 import { WSConnector } from "./ws-connectoer.js";
 
 class ChunkUploadManager {
@@ -31,7 +31,7 @@ class ChunkUploadManager {
 
     initHttpUpload() {
         const metadata = this.file.fileMetadata;
-        apiConnector.post('/api/files/upload', metadata)
+        webConnector.post('/files/upload', metadata)
                     .then(response => {
                         const data = response.data.data;
                         if (data.isFinished) {
@@ -176,7 +176,7 @@ class ChunkUploadManager {
                     md5: currentChunkMd5
                 };
 
-                apiConnector.post(`${Config.backendUrl}/api/files/upload-chunk`, uploadChunkDTO)
+                webConnector.post(`/files/upload-chunk`, uploadChunkDTO)
                             .then(response => {
                                 const data = response.data.data;
                                 if (data.isSuccess) {

@@ -1,4 +1,4 @@
-import './api-connector.js';
+import './web-connector.js';
 import './chunk-upload-manager.js';
 import editResource from './edit-resource.js';
 import fetchFileListModule from './fetch-file-list.js';
@@ -190,7 +190,7 @@ document.getElementById("advance-reset-btn").addEventListener("click", function 
     timeRangeSetting();
 });
 
-document.getElementById("time-range").addEventListener("click", function () {
+document.getElementById("time-range")?.addEventListener("click", function () {
     timeRangeSetting();
 });
 

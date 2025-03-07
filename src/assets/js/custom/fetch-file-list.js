@@ -1,4 +1,4 @@
-import apiConnector from "./api-connector.js";
+import webConnector from "./web-connector.js";
 import {formatFileSize, reservedPath, updatePaginationControls} from "./tool.js";
 import config from "../../../../config.js";
 import {loadEditData, openEditFileModal} from "./edit-resource.js";
@@ -14,9 +14,9 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
     let response;
     try {
         disableButton(folderId, isSearch);
-        let url = isSearch ? `/api/files/search` : `/api/folders/${folderId}`;
+        let url = isSearch ? `/files/search` : `/folders/${folderId}`;
 
-        response = await apiConnector.get(formatUrl(url, filter));
+        response = await webConnector.get(formatUrl(url, filter), {xsrfCookieName: "useless"});
         const files = response.data.data.files.data;
         const tbody = document.querySelector('.table-responsive tbody');
         const username = response.data.data.username;
@@ -259,7 +259,7 @@ async function getFileResource(fileId, action) {
         if (action === "preview") {
             window.open(`/preview?id=${fileId}`, '_blank');
         } else {
-            const response = await fetch(`${config.backendUrl}/api/files/${fileId}?action=download`, {
+            const response = await fetch(`${config.backendUrl}/web/v1/files/${fileId}?action=download`, {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -304,7 +304,7 @@ function getFilenameFromHeaders(headers) {
 
 async function deleteFile(fileId, isFolder) {
     if (isFolder) {
-        apiConnector.delete(`/api/folders/${fileId}`).then(response => {
+        webConnector.delete(`/folders/${fileId}`).then(response => {
             const status = response.data.status;
             if (status === 200) {
                 fetchFileList(currentFolderId).then();
@@ -314,7 +314,7 @@ async function deleteFile(fileId, isFolder) {
             $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         });
     } else {
-        apiConnector.delete(`/api/files/${fileId}`).then(response => {
+        webConnector.delete(`/files/${fileId}`).then(response => {
             const status = response.data.status;
             if (status === 200) {
                 fetchFileList(currentFolderId).then();
@@ -328,7 +328,7 @@ async function deleteFile(fileId, isFolder) {
 
 async function removeFile(fileId, isFolder) {
     if (isFolder) {
-        apiConnector.post(`/api/folders/remove/${fileId}`).then(response => {
+        webConnector.post(`/folders/remove/${fileId}`).then(response => {
             const status = response.data.status;
             if (status === 200) {
                 fetchFileList(currentFolderId).then();
@@ -338,7 +338,7 @@ async function removeFile(fileId, isFolder) {
             $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         });
     } else {
-        apiConnector.post(`/api/files/remove/${fileId}`).then(response => {
+        webConnector.post(`/files/remove/${fileId}`).then(response => {
             const status = response.data.status;
             if (status === 200) {
                 fetchFileList(currentFolderId).then();
@@ -352,7 +352,7 @@ async function removeFile(fileId, isFolder) {
 
 async function restoreFile(fileId, isFolder) {
     if (isFolder) {
-        apiConnector.post(`/api/folders/restore/${fileId}`).then(response => {
+        webConnector.post(`/folders/restore/${fileId}`).then(response => {
             const status = response.data.status;
             if (status === 200) {
                 fetchFileList(currentFolderId).then();
@@ -362,7 +362,7 @@ async function restoreFile(fileId, isFolder) {
             $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         });
     } else {
-        apiConnector.post(`/api/files/restore/${fileId}`).then(response => {
+        webConnector.post(`/files/restore/${fileId}`).then(response => {
             const status = response.data.status;
             if (status === 200) {
                 fetchFileList(currentFolderId).then();

@@ -1,5 +1,5 @@
 import {buttonLoading} from "./component.js";
-import apiConnector from "./api-connector.js";
+import webConnector from "./web-connector.js";
 
 document.getElementById("sign-up-form").addEventListener("submit", function(event) {
     if (!this.checkValidity()) {
@@ -43,7 +43,7 @@ document.getElementById("sign-up-form").addEventListener("submit", function(even
         confirmPassword: passwordConfirm
     }
 
-    apiConnector.post("/api/guest/register", JSON.stringify(data)).then((response) => {
+    webConnector.post("/guest/register", JSON.stringify(data)).then((response) => {
         if (response.data.status === 201) {
             buttonLoading(button, false, "註冊");
             $.NotificationApp.send("註冊成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");

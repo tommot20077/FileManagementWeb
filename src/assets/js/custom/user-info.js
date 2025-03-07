@@ -1,8 +1,8 @@
-import apiConnector from "./api-connector.js";
+import webConnector from "./web-connector.js";
 import {formatFileSize} from "./tool.js";
 
 export function getUserInfo(storageOnly = false) {
-    const response = apiConnector.get('/api/user/info');
+    const response = webConnector.get('/user/info', {xsrfCookieName: "useless"});
 
     if (document.getElementById('user-operation-list') && !storageOnly) {
         response.then(response => {
