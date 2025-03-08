@@ -14,7 +14,6 @@ async function fetchCsrfToken() {
     }
     return null;
 }
-
 const webConnector = axios.create({
     baseURL: `${Config.backendUrl}/web/v1`,
     withCredentials: true,

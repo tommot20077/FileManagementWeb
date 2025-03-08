@@ -243,7 +243,6 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
             window.history.pushState(filter, '', formatUrl(newUrl, filter));
         }
     } catch (error) {
-        console.error(error);
         $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
 }
