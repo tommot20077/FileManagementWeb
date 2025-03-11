@@ -70,7 +70,8 @@ export async function loadFilePreview(fileId) {
         }
         container.appendChild(element);
     } catch (error) {
-        $.NotificationApp.send(`錯誤:${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        const errorMessages = error.response?.data?.message || error;
+        $.NotificationApp.send(`錯誤:${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
 }
 

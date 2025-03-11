@@ -621,14 +621,38 @@
                                                             <label for="editFileName" class="col-2 col-form-label">名稱</label>
                                                             <div class="col-10">
                                                                 <input type="text" class="form-control" id="editFileName" placeholder="檔案名稱">
-                                                                <input type="hidden" id="editFileId"> <input type="hidden" id="fileType"> <input type="hidden"
-                                                                                                                                                 id="shareUsers">
-                                                                <input type="hidden" id="isStar"> <input type="hidden" id="parentFolderId">
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row mb-3">
+                                                            <label for="share-type" class="col-2 col-form-label">分享類型</label>
+                                                            <div class="col-10">
+                                                                <select class="form-select" id="share-type">
+                                                                    <option value='NONE'>關閉分享</option>
+                                                                    <option value='PRIVATE'>僅分享指定用戶</option>
+                                                                    <option value='PUBLIC'>分享給所有人</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row mb-3">
+                                                            <label for="shareUsers" class="col-2 col-form-label">共享用戶</label>
+                                                            <div class="col-10">
+                                                                <select id="shareUsers" multiple="multiple" style="width: 100%"> </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div>
+                                                            <div>
+                                                                <input type="hidden" id="editFileId"> <input type="hidden" id="isStar"><input type="hidden"
+                                                                                                                                              id="fileType">
+                                                                <input type="hidden" id="existShareUsers"> <input type="hidden" id="parentFolderId">
                                                             </div>
                                                             <div>
                                                                 <a href="javascript:void(0);" class="error-message" id="editFileNameError"></a>
                                                             </div>
                                                         </div>
+
                                                         <div class="justify-content-end row">
                                                             <div class="col-12">
                                                                 <button type="button" class="btn btn-primary" id="saveEditFile">儲存
@@ -686,7 +710,8 @@
                                                                 <input type="text"
                                                                        class="form-control dropdown-toggle me-2"
                                                                        placeholder="搜尋..."
-                                                                       id="base-file-search-keyword"> <span class="mdi mdi-magnify app-search search-icon me-2"></span>
+                                                                       id="base-file-search-keyword">
+                                                                <span class="mdi mdi-magnify app-search search-icon me-2"></span>
                                                                 <div class="btn-group">
                                                                     <button type="button" class="btn btn-info" style="width: 100px" id='base-search-btn'>搜尋
                                                                     </button>
@@ -697,13 +722,11 @@
                                                                             aria-controls="offcanvasTop"
                                                                             aria-haspopup="true"
                                                                             aria-expanded="false"></button>
-                                                                    <div class="offcanvas offcanvas-start"
-                                                                         tabindex="-1"
-                                                                         id="advance-search">
+                                                                    <div class="offcanvas offcanvas-start" tabindex="-1" id="advance-search">
                                                                         <div class="offcanvas-header">
                                                                             <h5 id="offcanvasTopLabel">進階搜尋</h5>
                                                                             <button type="button"
-                                                                                    id = 'close-advance-search-btn'
+                                                                                    id='close-advance-search-btn'
                                                                                     class="btn-close text-reset"
                                                                                     data-bs-dismiss="offcanvas"
                                                                                     aria-label="Close"></button>
@@ -729,9 +752,7 @@
                                                                                                disabled>
                                                                                     </div>
                                                                                     <div class="col-3">
-                                                                                        <button type="button"
-                                                                                                class="btn btn-info"
-                                                                                                id='choose-folder-btn'>選擇
+                                                                                        <button type="button" class="btn btn-info" id='choose-folder-btn'>選擇
                                                                                         </button>
                                                                                     </div>
                                                                                 </div>
@@ -755,12 +776,13 @@
                                                                                         </select>
                                                                                     </div>
                                                                                 </div>
-                                                                                <div class="row mb-3" id='calendar-range'>
-                                                                                </div>
+                                                                                <div class="row mb-3" id='calendar-range'></div>
 
                                                                                 <div class="col mb-3">
-                                                                                    <button type="button" class="btn btn-info" id ="advance-search-btn">搜尋</button>
-                                                                                    <button id='advance-reset-btn' type="reset" class="btn btn-secondary">重設</button>
+                                                                                    <button type="button" class="btn btn-info" id="advance-search-btn">搜尋
+                                                                                    </button>
+                                                                                    <button id='advance-reset-btn' type="reset" class="btn btn-secondary">重設
+                                                                                    </button>
                                                                                 </div>
                                                                             </form>
                                                                         </div>

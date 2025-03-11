@@ -10,7 +10,8 @@ async function fetchCsrfToken() {
             };
         }
     } catch (error) {
-        $.NotificationApp.send(`獲取 CSRF Token 失敗: ${error}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        const errorMessages = error.response?.data?.message || error;
+        $.NotificationApp.send(`獲取 CSRF Token 失敗: ${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
     return null;
 }

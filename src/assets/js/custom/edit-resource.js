@@ -23,7 +23,6 @@ document.getElementById("addNewFolder").addEventListener('click', () => {
             webConnector.post('/folders', {
                 filename: folderName,
                 parentFolderId: parentFolderId,
-                shareUsers: []
             }).then(response => {
                 if (response.data.status === 200) {
                     document.getElementById('newFolderName').value = '';
@@ -34,8 +33,9 @@ document.getElementById("addNewFolder").addEventListener('click', () => {
                 }
             });
         } catch (error) {
-            $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
-            errorContainer.textContent = error.response?.data?.message || '發生錯誤，請稍後再試。';
+            const errorMessages = error.response?.data?.message || error;
+            $.NotificationApp.send(`${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+            errorContainer.textContent = errorMessages
         } finally {
             buttonLoading(btn, false, '新增');
         }
@@ -52,9 +52,38 @@ document.getElementById("cancelAddNewFolder").addEventListener('click', () => {
 
 
 export async function openEditFileModal(file) {
+    loadEditData(file)
+
+    const shareUsersElement = $('#shareUsers');
+    const chooseShareTypeElement = document.getElementById('share-type');
+
+    shareUsersElement.select2({
+        placeholder: "選擇用戶",
+        allowClear: true,
+        tags: true,
+    });
+
+    if (chooseShareTypeElement.value === 'NONE') {
+        shareUsersElement.prop('disabled', true);
+    } else {
+        shareUsersElement.prop('disabled', false);
+    }
+    const existingUsers = await formatShareUsers(file.shareUsers)
+    document.getElementById("existShareUsers").value = existingUsers.map((user) => user[1]);
+    const shareUsers = document.getElementById('shareUsers')
+
+
+    existingUsers.forEach(user => {
+        let option = document.createElement("option");
+        option.text = user[0];
+        option.value = user[1];
+        option.selected = true;
+        shareUsers.appendChild(option);
+    });
+
     const editFileModalElement = document.getElementById('editFileModal');
-    loadEditData(file);
     editFileModalElement.classList.remove('hidden');
+
 }
 
 export function loadEditData(file) {
@@ -62,9 +91,41 @@ export function loadEditData(file) {
     document.getElementById('editFileId').value = file.id;
     document.getElementById("fileType").value = file.fileType;
     document.getElementById("isStar").value = file.isStar || false;
-    document.getElementById('shareUsers').value = file.shareUsers || [];
     document.getElementById("parentFolderId").value = file.parentFolderId;
     document.getElementById('editFileNameError').textContent = '';
+    document.getElementById('shareUsers').innerHTML = '';
+    document.getElementById('share-type').value = String(file.shareType)?.toUpperCase() || 'NONE';
+
+    return file
+}
+
+async function formatShareUsers(userIds) {
+    let shareUsers = [];
+    try {
+        if (userIds.length === 0) {
+            return shareUsers;
+        }
+
+        const response = await webConnector.get("/user/info/search", {
+            xsrfCookieName: 'useless',
+            params: {userInfos: userIds, type: 'id'}
+        });
+
+        if (response.data.status === 200) {
+            const userInfosMap = response.data.data.foundUser;
+            userIds.forEach((userId) => {
+                if (userInfosMap[userId]) {
+                    shareUsers.push([userInfosMap[userId], userId]);
+                }
+            });
+        }
+        new Error(response.data.message)
+    } catch (error) {
+        $.NotificationApp.send(`${error.response?.data?.message || '取得使用者資訊失敗。'}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        cleanFileInformation();
+        document.getElementById("editFileModal").classList.add("hidden");
+    }
+    return shareUsers;
 }
 
 function cleanFileInformation() {
@@ -72,7 +133,7 @@ function cleanFileInformation() {
     document.getElementById('editFileId').value = '';
     document.getElementById("fileType").value = '';
     document.getElementById("isStar").value = '';
-    document.getElementById('shareUsers').value = '';
+    document.getElementById('existShareUsers').value = [];
     document.getElementById("parentFolderId").value = '';
     document.getElementById('editFileNameError').textContent = '';
 }
@@ -84,8 +145,8 @@ document.getElementById("saveEditFile").addEventListener('click', async () => {
     const fileId = document.getElementById('editFileId').value;
     const isStar = document.getElementById("isStar").value;
     const fileType = document.getElementById("fileType").value;
-    const shareUsers = document.getElementById('shareUsers').value;
     const parentFolderId = document.getElementById("parentFolderId").value;
+    const chooseShareType = document.getElementById('share-type').value;
     const errorContainer = document.getElementById('editFileNameError');
 
     const btn = document.getElementById("saveEditFile");
@@ -98,20 +159,50 @@ document.getElementById("saveEditFile").addEventListener('click', async () => {
         return;
     }
 
+    let selectedUsers = $('#shareUsers').val() || [];
+
+    const existingUserIds = [...document.getElementById("existShareUsers").value.split(",")];
+
+    const addUsernames = selectedUsers.filter(id => !existingUserIds.includes(id));
+    const removeUsers = existingUserIds.filter(id => !selectedUsers.includes(id)).filter(id => id !== null && id !== "");
+
+    const editUsers = [
+        ...removeUsers.map(userId => ({userId, editType: 'remove'})),
+    ];
+
 
     buttonLoading(btn, true, '處理中...');
     const url = (fileType === 'FOLDER') ? '/folders' : '/files';
-
     try {
+        if (addUsernames.length > 0) {
+            await webConnector.get("/user/info/search", {
+                xsrfCookieName: 'useless',
+                params: {userInfos: addUsernames}
+            }).then(response => {
+                if (response.data.status === 200) {
+                    if (response.data.data.notFoundUser.length !== 0) {
+                        throw new Error("使用者不存在：" + response.data.data.notFoundUser.join(", "));
+                    }
+                    const userInfosMap = response.data.data.foundUser;
+                    addUsernames.forEach((username) => {
+                        editUsers.push({userId: userInfosMap[username], editType: 'add'});
+                    })
+                    return
+                }
+                throw new Error(response.data.message || '取得使用者資訊失敗。');
+            })
+        }
         const response = await webConnector.put(`${url}`, {
             filename: newFileName,
             fileId: fileId,
-            shareUsers: shareUsers,
+            shareUsers: editUsers,
             parentFolderId: parentFolderId,
-            isStar: isStar
+            isStar: isStar,
+            shareType: chooseShareType
         });
 
         if (response.data.status === 200) {
+            $.NotificationApp.send("檔案編輯成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
             cleanFileInformation();
             document.getElementById("editFileModal").classList.add("hidden");
             await fetchFileList(currentFolderId);
@@ -119,8 +210,9 @@ document.getElementById("saveEditFile").addEventListener('click', async () => {
             errorContainer.textContent = response.data.message || '編輯檔案失敗。';
         }
     } catch (error) {
-        $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
-        errorContainer.textContent = error.response?.data?.message || '發生錯誤，請稍後再試。';
+        const errorMessages = error.response?.data?.message || error;
+        $.NotificationApp.send(`${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        errorContainer.textContent = errorMessages;
     } finally {
         buttonLoading(btn, false, '儲存');
     }
@@ -133,6 +225,18 @@ document.getElementById("cancelEditFile").addEventListener('click', (e) => {
     document.getElementById("editFileModal").classList.add("hidden");
     buttonLoading(document.getElementById("saveEditFile"), false, '儲存');
 });
+
+document.getElementById("share-type").addEventListener('change', (e) => {
+    const shareUsers = $('#shareUsers');
+    if (e.target.value === 'NONE') {
+        shareUsers.prop('disabled', true);
+    } else {
+        shareUsers.prop('disabled', false);
+    }
+})
+
+
+
 
 
 document.getElementById("addNewOnlineDocument").addEventListener('click', () => {
@@ -159,7 +263,8 @@ document.getElementById("addNewOnlineDocument").addEventListener('click', () => 
         }
         throw new Error(response.data.message || '新增檔案失敗。');
     }).catch(error => {
-        $.NotificationApp.send(`檔案建立失敗:${error.response?.data?.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        const errorMessages = error.response?.data?.message || error;
+        $.NotificationApp.send(`檔案建立失敗:${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }).finally(() => {
         buttonLoading(btn, false, '新增');
     });

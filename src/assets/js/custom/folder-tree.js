@@ -227,7 +227,8 @@ class FolderTree {
                     closeMoveFileModal();
                 }
             } catch (error) {
-                $.NotificationApp.send(`移動失敗:${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+                const errorMessages = error.response?.data?.message || error;
+                $.NotificationApp.send(`移動失敗:${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
             }
         });
         chooseButton?.addEventListener('click', async () => {

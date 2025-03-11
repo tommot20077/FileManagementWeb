@@ -36,7 +36,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         throw new Error(response.data.message || "文件不存在");
     }).catch((error) => {
-        $.NotificationApp.send(`${error.response.data.message || error}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        const errorMessages = error.response?.data?.message || error;
+        $.NotificationApp.send(`${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     });
 
     getUserHistoryVersion().then(r => {});
@@ -90,7 +91,8 @@ document.getElementById("update-btn").addEventListener("click", function () {
         }
         throw new Error(response.data.message || "更新失敗");
     }).catch((error) => {
-        $.NotificationApp.send(`更新失敗: ${error.response.data.message || error}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        const errorMessages = error.response?.data?.message || error;
+        $.NotificationApp.send(`更新失敗: ${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         buttonLoading(doc, false, "更新");
     })
 });
@@ -190,7 +192,8 @@ async function getUserHistoryVersion () {
             throw new Error(response.data.message || "還原失敗");
         }).catch((error) => {
             buttonLoading(this, false, "復原");
-            $.NotificationApp.send(`還原失敗: ${error.response.data.message || error}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+            const errorMessages = error.response?.data?.message || error;
+            $.NotificationApp.send(`還原失敗: ${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         })
     });
 
@@ -216,7 +219,8 @@ async function getUserHistoryVersion () {
             }
         }).catch((error) => {
             buttonLoading(this, false, "建立");
-            $.NotificationApp.send(`建立版本失敗: ${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+            const errorMessages = error.response?.data?.message || error;
+            $.NotificationApp.send(`建立版本失敗: ${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         });
     });
 }

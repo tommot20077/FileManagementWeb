@@ -47,8 +47,8 @@ class ChunkUploadManager {
                         }
                     })
                     .catch(error => {
-                        const message = error.response?.data?.message || '未知錯誤';
-                        this.onProgress(0, 'failed', `上傳失敗: ${message}`);
+                        const errorMessages = error.response?.data?.message || error;
+                        this.onProgress(0, 'failed', `上傳失敗: ${errorMessages}`);
                         this.file.uploadStatus = 'failed';
                         this.onError(error);
                     });
@@ -186,8 +186,8 @@ class ChunkUploadManager {
                                 }
                             })
                             .catch(error => {
-                                const message = error.response?.data?.message || error.message;
-                                reject(new Error(message));
+                                const errorMessages = error.response?.data?.message || error;
+                                reject(new Error(errorMessages));
                             });
             };
             reader.onerror = () => {

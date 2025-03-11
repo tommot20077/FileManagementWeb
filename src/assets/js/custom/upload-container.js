@@ -144,8 +144,9 @@ document.getElementById('submitUpload').addEventListener('click', () => {
                              toggleUploadButtons(false);
                          }
                      })
-                     .catch(err => {
-                         $.NotificationApp.send(`文件 ${file.name} 上傳失敗:${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+                     .catch(error => {
+                         const errorMessages = error.response?.data?.message || error;
+                         $.NotificationApp.send(`文件 ${file.name} 上傳失敗:${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
                          if (uploadManager.currentUploads === 0 && uploadManager.queue.length === 0) {
                              toggleUploadButtons(false);
                          }
@@ -218,8 +219,9 @@ document.getElementById('submitUploadWs').addEventListener('click', () => {
                              toggleUploadButtons(false); // 所有上傳完成後恢復按鈕
                          }
                      })
-                     .catch(err => {
-                         $.NotificationApp.send(`文件 ${file.name} 通過 WebSocket 上傳失敗:${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+                     .catch(error => {
+                         const errorMessages = error.response?.data?.message || error;
+                         $.NotificationApp.send(`文件 ${file.name} 通過 WebSocket 上傳失敗:${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
                          if (uploadManager.currentUploads === 0 && uploadManager.queue.length === 0) {
                              toggleUploadButtons(false); // 上傳失敗後恢復按鈕
                          }

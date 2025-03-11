@@ -136,7 +136,7 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
                 {icon: 'mdi-link', text: '取得可分享連結'},
                 {icon: 'mdi-star', text: '加入星號'},
                 {icon: 'mdi-star-outline', text: '移除星號'},
-                {icon: 'mdi-pencil', text: '重新命名'},
+                {icon: 'mdi-pencil', text: '編輯'},
                 {icon: 'mdi-file-move', text: '移動'},
                 {icon: 'mdi-eye', text: '預覽'},
                 {icon: 'mdi-download', text: '下載'},
@@ -191,7 +191,7 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
                         e.preventDefault();
                         await removeFile(file.id, file.fileType === 'FOLDER');
                     });
-                } else if (action.text === '重新命名') {
+                } else if (action.text === '編輯') {
                     actionItem.addEventListener('click', async (e) => {
                         e.preventDefault();
                         await openEditFileModal(file);
@@ -243,7 +243,8 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
             window.history.pushState(filter, '', formatUrl(newUrl, filter));
         }
     } catch (error) {
-        $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        const errorMessages = error.response?.data?.message || error;
+        $.NotificationApp.send(`${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
 }
 
@@ -284,7 +285,8 @@ async function getFileResource(fileId, action) {
             await pump();
         }
     } catch (error) {
-        $.NotificationApp.send(`下載錯誤:${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        const errorMessages = error.response?.data?.message || error;
+        $.NotificationApp.send(`下載錯誤:${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
 }
 
@@ -310,7 +312,8 @@ async function deleteFile(fileId, isFolder) {
                 getUserInfo(true);
             }
         }).catch(error => {
-            $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+            const errorMessages = error.response?.data?.message || error;
+            $.NotificationApp.send(`${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         });
     } else {
         webConnector.delete(`/files/${fileId}`).then(response => {
@@ -320,7 +323,8 @@ async function deleteFile(fileId, isFolder) {
                 getUserInfo(true);
             }
         }).catch(error => {
-            $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+            const errorMessages = error.response?.data?.message || error;
+            $.NotificationApp.send(`${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         });
     }
 }
@@ -334,7 +338,8 @@ async function removeFile(fileId, isFolder) {
                 getUserInfo(true);
             }
         }).catch(error => {
-            $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+            const errorMessages = error.response?.data?.message || error;
+            $.NotificationApp.send(`${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         });
     } else {
         webConnector.post(`/files/remove/${fileId}`).then(response => {
@@ -344,7 +349,8 @@ async function removeFile(fileId, isFolder) {
                 getUserInfo(true);
             }
         }).catch(error => {
-            $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+            const errorMessages = error.response?.data?.message || error;
+            $.NotificationApp.send(`${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         });
     }
 }
@@ -358,7 +364,8 @@ async function restoreFile(fileId, isFolder) {
                 getUserInfo(true);
             }
         }).catch(error => {
-            $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+            const errorMessages = error.response?.data?.message || error;
+            $.NotificationApp.send(`${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         });
     } else {
         webConnector.post(`/files/restore/${fileId}`).then(response => {
@@ -368,7 +375,8 @@ async function restoreFile(fileId, isFolder) {
                 getUserInfo(true);
             }
         }).catch(error => {
-            $.NotificationApp.send(`${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+            const errorMessages = error.response?.data?.message || error;
+            $.NotificationApp.send(`${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         });
     }
 }

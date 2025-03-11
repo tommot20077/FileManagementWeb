@@ -31,8 +31,9 @@ document.getElementById("sign-in-form").addEventListener("submit", function (eve
             $.NotificationApp.send(`登入失敗: ${response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         }
     }).catch((error) => {
+        const errorMessages = error.response?.data?.message || error;
         buttonLoading(button, false, "登入");
-        $.NotificationApp.send(`登入失敗: ${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        $.NotificationApp.send(`登入失敗: ${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     });
 });
 

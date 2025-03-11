@@ -1,69 +1,74 @@
 .error-message {
-  color: red;
-  font-size: 12px;
-  margin-top: 5px;
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
 }
 
 
 .folder-list {
-  border: 1px solid #eef2f7;
-  border-radius: 4px;
-  list-style: none;
-  padding-left: 0;
+    border: 1px solid #eef2f7;
+    border-radius: 4px;
+    list-style: none;
+    padding-left: 0;
 }
 
 .folder-item {
-  border-bottom: 1px solid #eef2f7;
-  padding: 8px 0;
-  list-style-type: none;
+    border-bottom: 1px solid #eef2f7;
+    padding: 8px 0;
+    list-style-type: none;
 }
 
 .folder-item:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .folder-item .side-nav-link {
-  padding: 8px 16px;
-  display: flex !important; /* 強制使用 flex 布局 */
-  align-items: center;
-  width: 100%;
+    padding: 8px 16px;
+    display: flex !important;
+    align-items: center;
+    width: 100%;
 }
 
 .folder-item .side-nav-link:hover {
-  background-color: #f8f9fa;
+    background-color: #f8f9fa;
 }
 
 .folder-item .side-nav-link.active {
-  background-color: #eef2f7;
-  color: #727cf5;
+    background-color: #eef2f7;
+    color: #727cf5;
 }
 
 .folder-item i {
-  font-size: 1.2rem;
-  width: 24px;
-  text-align: center;
-  margin-right: 8px;
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+    margin-right: 8px;
 }
 
 .folder-item span {
-  text-align: left;
-  flex: 1;
+    text-align: left;
+    flex: 1;
 }
 
 .breadcrumb-item.active {
-  color: #6c757d;
-  pointer-events: none;
+    color: #6c757d;
+    pointer-events: none;
 }
 
 .breadcrumb-item a {
-  color: #727cf5;
-  text-decoration: none;
+    color: #727cf5;
+    text-decoration: none;
 }
 
 .breadcrumb-item a:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
-.show-calendar  {
-  z-index: 9999 !important;
+.show-calendar {
+    z-index: 9999 !important;
+}
+
+.select2-selection__choice {
+    color: #6c757d !important;
+    background: #b9d2ef !important;
 }

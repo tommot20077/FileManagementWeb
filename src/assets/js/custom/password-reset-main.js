@@ -26,7 +26,8 @@ document.getElementById('reset-password-btn').addEventListener('click', function
         }
         throw new Error(response.data.message)
     }).catch((error) => {
-        $.NotificationApp.send(`驗證碼發送失敗 ${error.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "warning");
+        const errorMessages = error.response?.data?.message || error;
+        $.NotificationApp.send(`驗證碼發送失敗 ${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "warning");
         buttonLoading(this, false, "重置密碼");
     });
 });
@@ -77,7 +78,8 @@ document.getElementById('reset-password').addEventListener('click', function (ev
         }
         throw new Error(response.data.message)
     }).catch((error) => {
-        $.NotificationApp.send(`密碼重設失敗 ${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "warning");
+        const errorMessages = error.response?.data?.message || error;
+        $.NotificationApp.send(`密碼重設失敗 ${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "warning");
         buttonLoading(this, false, "重置密碼");
     })
 });

@@ -53,7 +53,8 @@ document.getElementById("sign-up-form").addEventListener("submit", function(even
         $.NotificationApp.send(`註冊失敗: ${response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }).catch((error) => {
         buttonLoading(button, false, "註冊");
-        $.NotificationApp.send(`註冊失敗: ${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        const errorMessages = error.response?.data?.message || error;
+        $.NotificationApp.send(`註冊失敗: ${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     })
 
 });
