@@ -56,11 +56,11 @@
 }
 
 #file-previews {
-    max-height: 300px; /* 根據需要調整最大高度 */
+    max-height: 300px;
     overflow-y: auto;
 }
 
-/* 禁用頁面滾動 */
-body.no-scroll {
+.body.no-scroll {
     overflow: hidden;
 }
+

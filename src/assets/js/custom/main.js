@@ -73,6 +73,10 @@ document.getElementById("recycle-btn")?.addEventListener("click", () => {
     fetchFileListModule.fetchFileList(-4, 1, true).then(() => {
     });
 });
+document.getElementById("shared-btn")?.addEventListener("click", () => {
+    fetchFileListModule.fetchFileList(-5, 1, true).then(() => {
+    });
+});
 
 
 function htmlStyle() {

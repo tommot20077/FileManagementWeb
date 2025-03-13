@@ -69,6 +69,10 @@
 }
 
 .select2-selection__choice {
-    color: #6c757d !important;
-    background: #b9d2ef !important;
+    color: #323335 !important;
+    background: #f4c58c !important;
+}
+.form-check-input:checked {
+    background-color: #6ebde8 !important;
+    border-color: #a6a9de !important;
 }

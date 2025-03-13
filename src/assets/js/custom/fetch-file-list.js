@@ -136,7 +136,7 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
                 {icon: 'mdi-link', text: '取得可分享連結'},
                 {icon: 'mdi-star', text: '加入星號'},
                 {icon: 'mdi-star-outline', text: '移除星號'},
-                {icon: 'mdi-pencil', text: '編輯'},
+                {icon: 'mdi-pencil', text: '重新命名'},
                 {icon: 'mdi-file-move', text: '移動'},
                 {icon: 'mdi-eye', text: '預覽'},
                 {icon: 'mdi-download', text: '下載'},
@@ -191,10 +191,10 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
                         e.preventDefault();
                         await removeFile(file.id, file.fileType === 'FOLDER');
                     });
-                } else if (action.text === '編輯') {
+                } else if (action.text === '重新命名') {
                     actionItem.addEventListener('click', async (e) => {
                         e.preventDefault();
-                        await openEditFileModal(file);
+                        await openEditFileModal(file, false);
                     });
                 } else if (action.text === '移動') {
                     actionItem.addEventListener('click', async (e) => {
@@ -206,7 +206,7 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
                         e.preventDefault();
                         loadEditData(file)
                         document.getElementById("isStar").value = '加入星號' === action.text;
-                        document.getElementById('saveEditFile').click();
+                        document.getElementById('saveRenameEditFile').click();
                     });
                 } else if (action.text === '永久刪除') {
                     actionItem.addEventListener('click', async (e) => {
@@ -217,6 +217,11 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
                     actionItem.addEventListener('click', async (e) => {
                         e.preventDefault();
                         await restoreFile(file.id, file.fileType === 'FOLDER');
+                    });
+                } else if (action.text === '分享') {
+                    actionItem.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        await openEditFileModal(file, true);
                     });
                 }
 

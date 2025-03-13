@@ -7,11 +7,13 @@ export const reservedPath = {
     "star": "-2",
     "recently": "-3",
     "recycle": "-4",
+    "shared": "-5",
 
     "-1": "all",
     "-2": "star",
     "-3": "recently",
-    "-4": "recycle"
+    "-4": "recycle",
+    "-5": "shared"
 }
 
 function formatFileSize(size) {

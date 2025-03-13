@@ -613,7 +613,7 @@
                                                 </div>
                                             </div>
 
-                                            <div id="editFileModal" class="modal-overlay hidden">
+                                            <div id="renameFileModal" class="modal-overlay hidden">
                                                 <div class="modal-content" style="max-width: 600px">
                                                     <h4>編輯檔案</h4>
                                                     <form class="form-horizontal">
@@ -623,15 +623,44 @@
                                                                 <input type="text" class="form-control" id="editFileName" placeholder="檔案名稱">
                                                             </div>
                                                         </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="error-message" id="renameFileNameError"></a>
+                                                        </div>
 
+                                                        <div class="justify-content-end row">
+                                                            <div class="col-12">
+                                                                <button type="button" class="btn btn-primary" id="saveRenameEditFile">儲存
+                                                                </button>
+                                                                <button type="button" class="btn btn-secondary" id="cancelRenameEditFile">取消
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+
+                                            <div id="editShareFileModal" class="modal-overlay hidden">
+                                                <div class="modal-content" style="max-width: 600px">
+                                                    <h4>管理分享狀態</h4>
+                                                    <form class="form-horizontal" id="editFileForm">
                                                         <div class="row mb-3">
                                                             <label for="share-type" class="col-2 col-form-label">分享類型</label>
                                                             <div class="col-10">
                                                                 <select class="form-select" id="share-type">
                                                                     <option value='NONE'>關閉分享</option>
                                                                     <option value='PRIVATE'>僅分享指定用戶</option>
+                                                                    <option value='DEFAULT'>默認分享</option>
                                                                     <option value='PUBLIC'>分享給所有人</option>
                                                                 </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class='row md-3'>
+                                                            <label class="col-2 col form-check-label" for="recursiveSettingSwitch">同步設定到子資料夾</label>
+                                                            <div class="col-10">
+                                                                <div class="form-check form-switch">
+                                                                    <input type="checkbox" class="form-check-input" id="recursiveSettingSwitch">
+                                                                </div>
                                                             </div>
                                                         </div>
 
@@ -642,28 +671,29 @@
                                                             </div>
                                                         </div>
 
+
                                                         <div>
-                                                            <div>
-                                                                <input type="hidden" id="editFileId"> <input type="hidden" id="isStar"><input type="hidden"
-                                                                                                                                              id="fileType">
-                                                                <input type="hidden" id="existShareUsers"> <input type="hidden" id="parentFolderId">
-                                                            </div>
-                                                            <div>
-                                                                <a href="javascript:void(0);" class="error-message" id="editFileNameError"></a>
-                                                            </div>
+                                                            <a href="javascript:void(0);" class="error-message" id="editFileShareError"></a>
                                                         </div>
+
 
                                                         <div class="justify-content-end row">
                                                             <div class="col-12">
-                                                                <button type="button" class="btn btn-primary" id="saveEditFile">儲存
+                                                                <button type="button" class="btn btn-primary" id="saveShareEditFile">儲存
                                                                 </button>
-                                                                <button type="button" class="btn btn-secondary" id="cancelEditFile">取消
+                                                                <button type="button" class="btn btn-secondary" id="cancelShareEditFile">取消
                                                                 </button>
                                                             </div>
                                                         </div>
                                                     </form>
                                                 </div>
                                             </div>
+
+                                            <div>
+                                                <input type="hidden" id="editFileId"> <input type="hidden" id="isStar"><input type="hidden" id="fileType">
+                                                <input type="hidden" id="existShareUsers"> <input type="hidden" id="parentFolderId">
+                                            </div>
+
 
                                             <div class="email-menu-list mt-3">
                                                 <a href="javascript:void(0);"
@@ -674,7 +704,8 @@
                                                 <a href="javascript:void(0);"
                                                    class="list-group-item border-0 disabled"><i class="mdi mdi-dropbox font-18 align-middle me-2"></i>Dropbox</a>
                                                 <a href="javascript:void(0);"
-                                                   class="list-group-item border-0 disabled"><i class="mdi mdi-share-variant font-18 align-middle me-2"></i>與 我分享</a>
+                                                    id='shared-btn'
+                                                   class="list-group-item border-0"><i class="mdi mdi-share-variant font-18 align-middle me-2"></i>與 我分享</a>
                                                 <a href="javascript:void(0);"
                                                    id='stars-btn'
                                                    class="list-group-item border-0"><i class="mdi mdi-star-outline font-18 align-middle me-2"></i>加星標</a> <a
