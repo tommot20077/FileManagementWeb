@@ -76,3 +76,7 @@
     background-color: #6ebde8 !important;
     border-color: #a6a9de !important;
 }
+
+.card-body .page-aside-right .table-responsive {
+    min-height: 500px !important;
+}

@@ -148,6 +148,9 @@ function htmlStyle() {
         const folder = document.getElementById("advance-folder").value;
         const selectedTypes = Array.from(document.getElementById("choose-type").selectedOptions).map(option => option.value);
         const timeRange = document.getElementById("time-range").innerText.trim();
+        const includeShared = document.getElementById("include-share").checked;
+        const includeDeleted = document.getElementById("include-delete").checked;
+
         let startDate = null;
         let endDate = null;
         if (timeRange) {
@@ -162,7 +165,10 @@ function htmlStyle() {
             keyword: keyword.trim().length > 0 ? keyword : null,
             folder: folder.trim().length > 0 ? folder : null,
             start: convertToISOFormat(startDate),
-            end: convertToISOFormat(endDate)
+            end: convertToISOFormat(endDate),
+            deleted: includeDeleted,
+            shared: includeShared
+
         }
         if (keyword && keyword.trim().length < 2) {
             $.NotificationApp.send(`關鍵字長度需大於2`, "", "bottom-right", "rgba(0,0,0,0.2)", "warning");

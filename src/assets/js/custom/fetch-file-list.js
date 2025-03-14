@@ -85,33 +85,16 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
             tr.appendChild(sizeTd);
             tr.appendChild(ownerTd);
 
-            const membersTd = document.createElement('td');
-            membersTd.id = `tooltip-container-${file.id}`;
-            const avatarGroup = document.createElement('div');
-            avatarGroup.classList.add('avatar-group');
+            const shareTypeTd = document.createElement('td');
+            const type = {
+                "NONE": "關閉分享",
+                "DEFAULT": "預設分享",
+                'PRIVATE': "私有分享",
+                'PUBLIC': "公開分享"
+            }
 
-            file.shareUsers.forEach(member => {
-                const memberLink = document.createElement('a');
-                memberLink.href = 'javascript:void(0);';
-                memberLink.classList.add('avatar-group-item', 'mb-0');
-                memberLink.setAttribute('data-bs-container', `#tooltip-container-${file.id}`);
-                memberLink.setAttribute('data-bs-toggle', 'tooltip');
-                memberLink.setAttribute('data-bs-placement', 'top');
-                memberLink.setAttribute('title', member.name);
-                /*
-                const memberImg = document.createElement('img');
-                memberImg.src = member.avatarUrl;
-                memberImg.classList.add('rounded-circle', 'avatar-xs');
-                memberImg.alt = '朋友';
-                memberLink.appendChild(memberImg);
-
-                 */
-
-                avatarGroup.appendChild(memberLink);
-            });
-
-            membersTd.appendChild(avatarGroup);
-            tr.appendChild(membersTd);
+            shareTypeTd.textContent = type[file.shareType];
+            tr.appendChild(shareTypeTd);
 
             const actionsTd = document.createElement('td');
 
@@ -473,6 +456,14 @@ function formatUrl(url, filter) {
 
     if (filter.end) {
         params += `&end=${filter.end}`;
+    }
+
+    if (filter.deleted) {
+        params += `&deleted=${filter.deleted}`;
+    }
+
+    if (filter.shared) {
+        params += `&shared=${filter.shared}`;
     }
 
     if (params !== "?") {

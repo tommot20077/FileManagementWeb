@@ -1,87 +1,141 @@
 import config from "../../../../config.js";
+import videojs from "video.js";
+import 'video.js/dist/video-js.css';
+import '@videojs/themes/dist/sea/index.css';
 
 
-export async function loadFilePreview(fileId) {
+async function getFileMetadata(fileId) {
     try {
-        let element;
-        const container = document.getElementById('previewContainer');
-        const loadingProgressBar = document.getElementById('loading-progress-bar');
         const response = await fetch(`${config.backendUrl}/web/v1/files/${fileId}?action=preview`, {
-            method: 'GET',
-            credentials: 'include'
+            method: "HEAD",
+            credentials: "include",
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            container.innerHTML = "";
-            element = document.createElement("p");
-            element.textContent = errorData.message;
-            container.appendChild(element);
-            return
+            new Error("無法獲取檔案資訊");
         }
-        const reader = response.body.getReader();
-        const chunks = [];
-        let receivedLength = 0;
-        const contentLength = response.headers.get('Content-Length');
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            chunks.push(value);
-            receivedLength += value.length;
-            loadingProgressBar.style.width = (receivedLength/contentLength) * 100 + "%";
-        }
-        loadingProgressBar.style.width = "100%";
-
-        let type = response.headers.get('Content-Type').toLowerCase();
-        const blob = new Blob(chunks, { type: type });
-
-        const url = URL.createObjectURL(blob);
-
-        container.innerHTML = "";
-        if (type.startsWith("image")) {
-            element = document.createElement("img");
-            element.src = url;
-        } else if (type.startsWith("video")) {
-            element = document.createElement("video");
-            element.controls = true;
-            let source = document.createElement("source");
-            source.src = url;
-            source.type = type;
-            element.appendChild(source);
-        } else if (type.startsWith("audio")) {
-            element = document.createElement("audio");
-            element.controls = true;
-            let source = document.createElement("source");
-            source.src = url;
-            source.type = type;
-            element.appendChild(source);
-        } else if (type === "application/pdf" || type.includes("msword") || type.includes("openxmlformats") || type.startsWith("text")) {
-            element = document.createElement("iframe");
-            element.src = url;
-            element.style.width = "100%";
-            element.style.height = "100%";
-        } else if (type === "application/zip" || type.includes("x-rar") || type.includes("x-7z")) {
-            element = document.createElement("p");
-            element.textContent = "此為壓縮檔案，請下載後解壓縮。";
-        } else {
-            element = document.createElement("p");
-            element.textContent = "無法預覽此檔案類型";
-        }
-        container.appendChild(element);
+        return {
+            type: response.headers.get("Content-Type")?.toLowerCase() || "",
+            size: response.headers.get("Content-Length"),
+        };
     } catch (error) {
-        const errorMessages = error.response?.data?.message || error;
-        $.NotificationApp.send(`錯誤:${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        console.error("獲取檔案資訊錯誤:", error);
+        return null;
     }
 }
 
+export async function loadFilePreview(fileId) {
+    const container = document.getElementById("previewContainer");
+    const progressBar = document.getElementById("loading-progress-bar");
 
-document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const fileId = urlParams.get('id');
-    if (fileId) {
-        loadFilePreview(fileId).then(r => {});
+    const metadata = await getFileMetadata(fileId);
+    if (!metadata) {
+        container.innerHTML = "<p>無法獲取檔案資訊</p>";
+        return;
+    }
+
+    const {type} = metadata;
+    const fileUrl = `${config.backendUrl}/web/v1/files/${fileId}?action=preview`;
+
+    try {
+        if (type.startsWith("video") || type.startsWith("audio")) {
+            container.innerHTML = "";
+            const element = document.createElement("video");
+            element.id = "video-preview";
+            element.className = "video-js vjs-theme-sea vjs-big-play-centered";
+            element.controls = true;
+            element.style.width = "100%";
+            container.appendChild(element);
+
+            videojs("video-preview", {
+                controls: true,
+                autoplay: false,
+                responsive: true,
+                preload: "auto",
+                html5: {
+                    nativeAudioTracks: false,
+                    nativeVideoTracks: false,
+                    hls: {
+                        overrideNative: true
+                    },
+                    vhs: {
+                        cacheEncryptionKeys: true,
+                        maxBufferLength: 60
+                    }
+                },
+                sources: [{src: fileUrl, type}]
+            });
+        } else {
+            // 下載文件，並更新進度條
+            const response = await fetch(fileUrl, {credentials: "include"});
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                container.innerHTML = `<p>${errorData.message}</p>`;
+                return;
+            }
+
+            const reader = response.body.getReader();
+            const chunks = [];
+            let receivedLength = 0;
+            const contentLength = parseInt(response.headers.get("Content-Length"), 10) || 0;
+
+            function updateProgress() {
+                if (contentLength) {
+                    progressBar.style.width = `${(receivedLength / contentLength) * 100}%`;
+                }
+            }
+
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                receivedLength += value.length;
+                updateProgress();
+            }
+            progressBar.style.width = "100%";
+
+            const blob = new Blob(chunks, {type});
+            const url = URL.createObjectURL(blob);
+
+            renderPreview(url, type);
+        }
+    } catch (error) {
+        console.error("文件載入錯誤:", error);
+        container.innerHTML = "<p>文件載入失敗</p>";
+    }
+}
+
+function renderPreview(url, type) {
+    const container = document.getElementById("previewContainer");
+    container.innerHTML = "";
+
+    let element;
+    if (type.startsWith("image")) {
+        element = document.createElement("img");
+        element.src = url;
+        element.style.maxWidth = "100%";
+    } else if (type === "application/pdf" || type.includes("msword") || type.includes("openxmlformats") || type.startsWith("text")) {
+        element = document.createElement("iframe");
+        element.src = url;
+        element.style.width = "100%";
+        element.style.height = "800px";
     } else {
-        document.getElementById('previewContainer').textContent = '未提供檔案 ID';
+        element = document.createElement("p");
+        element.textContent = "無法預覽此檔案類型";
+    }
+
+    container.appendChild(element);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fileId = urlParams.get("id");
+
+    if (fileId) {
+        loadFilePreview(fileId);
+    } else {
+        document.getElementById("previewContainer").textContent = "未提供檔案 ID";
     }
 });

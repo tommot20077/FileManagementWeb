@@ -363,14 +363,14 @@
                                     <a href="javascript:void(0);" class="dropdown-item notify-item"> <i class="mdi mdi-account-edit me-1"></i> <span>設定</span>
                                     </a>
 
-                                    <!-- item-->
+                                    <!-- item
                                     <a href="javascript:void(0);" class="dropdown-item notify-item"> <i class="mdi mdi-lifebuoy me-1"></i> <span>支援</span>
                                     </a>
-
-                                    <!-- item-->
+-->
+                                    <!-- item
                                     <a href="javascript:void(0);" class="dropdown-item notify-item"> <i class="mdi mdi-lock-outline me-1"></i>
                                         <span>鎖定螢幕</span> </a>
-
+-->
                                     <!-- item-->
                                     <a href="javascript:void(0);" id='logoutBtn' class="dropdown-item notify-item"> <i class="mdi mdi-logout me-1"></i>
                                         <span>登出</span> </a>
@@ -809,6 +809,21 @@
                                                                                 </div>
                                                                                 <div class="row mb-3" id='calendar-range'></div>
 
+                                                                                <div class="row mb-3" >
+                                                                                    <label class="col-3 col-form-label form-check-label">包含刪除</label>
+                                                                                    <div class="col-9 col-form-label form-check-label">
+                                                                                        <input type="checkbox" id="include-delete" data-switch="bool"/>
+                                                                                        <label for='include-delete' data-on-label="Yes" data-off-label="No"></label>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="row mb-3" >
+                                                                                    <label class="col-3 col-form-label form-check-label">包含分享</label>
+                                                                                    <div class="col-9 col-form-label form-check-label">
+                                                                                        <input type="checkbox" id="include-share" data-switch="bool"/>
+                                                                                        <label for='include-share' data-on-label="Yes" data-off-label="No"></label>
+                                                                                    </div>
+                                                                                </div>
+
                                                                                 <div class="col mb-3">
                                                                                     <button type="button" class="btn btn-info" id="advance-search-btn">搜尋
                                                                                     </button>
@@ -833,52 +848,6 @@
                                                 </div>
                                             </div>
 
-                                            <div class="mt-3">
-                                                <h5 class="mb-2">快速訪問</h5>
-
-                                                <div class="row mx-n1 g-0">
-                                                    <div class="col-xxl-3 col-lg-6">
-                                                        <div class="card m-1 shadow-none border">
-                                                            <div class="p-2">
-                                                                <div class="row align-items-center">
-                                                                    <div class="col-auto">
-                                                                        <div class="avatar-sm">
-                                                                <span class="avatar-title bg-light text-secondary rounded">
-                                                                    <i class="mdi mdi-folder-zip font-16"></i>
-                                                                </span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col ps-0">
-                                                                        <a href="javascript:void(0);" class="text-muted fw-bold">Hyper-sketch.zip</a>
-                                                                        <p class="mb-0 font-13">2.3 MB</p>
-                                                                    </div>
-                                                                </div> <!-- end row -->
-                                                            </div> <!-- end .p-2-->
-                                                        </div> <!-- end col -->
-                                                    </div> <!-- end col-->
-
-                                                    <div class="col-xxl-3 col-lg-6">
-                                                        <div class="card m-1 shadow-none border">
-                                                            <div class="p-2">
-                                                                <div class="row align-items-center">
-                                                                    <div class="col-auto">
-                                                                        <div class="avatar-sm">
-                                                                <span class="avatar-title bg-light text-secondary rounded">
-                                                                    <i class="mdi mdi-folder font-16"></i>
-                                                                </span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col ps-0">
-                                                                        <a href="javascript:void(0);" class="text-muted fw-bold">編譯版本</a>
-                                                                        <p class="mb-0 font-13">87.2 MB</p>
-                                                                    </div>
-                                                                </div> <!-- end row -->
-                                                            </div> <!-- end .p-2-->
-                                                        </div> <!-- end col -->
-                                                    </div> <!-- end col-->
-                                                </div> <!-- end row-->
-                                            </div> <!-- end .mt-3-->
-
 
                                             <div class="mt-3">
                                                 <h5 class="mb-3">檔案列表</h5>
@@ -891,7 +860,7 @@
                                                                 <th class="border-0">最後使用時間</th>
                                                                 <th class="border-0">大小</th>
                                                                 <th class="border-0">擁有者</th>
-                                                                <th class="border-0">共享成員</th>
+                                                                <th class="border-0">共享模式</th>
                                                                 <th class="border-0" style="width: 80px;">操作</th>
                                                             </tr>
                                                         </thead>
