@@ -2,22 +2,20 @@ import config from "../../../../config.js";
 import videojs from "video.js";
 import 'video.js/dist/video-js.css';
 import '@videojs/themes/dist/sea/index.css';
+import webConnector from "./web-connector.js";
 
 
 async function getFileMetadata(fileId) {
     try {
-        const response = await fetch(`${config.backendUrl}/web/v1/files/${fileId}?action=preview`, {
-            method: "HEAD",
-            credentials: "include",
-        });
+        const response = await webConnector.get(`${config.backendUrl}/web/v1/files/${fileId}/info`);
 
-        if (!response.ok) {
+        if (response.status !== 200) {
             new Error("無法獲取檔案資訊");
         }
 
         return {
-            type: response.headers.get("Content-Type")?.toLowerCase() || "",
-            size: response.headers.get("Content-Length"),
+            type: response.data.data["X-File-Content-Type"] || "",
+            size: response.data.data["X-File-Size"] || 0
         };
     } catch (error) {
         console.error("獲取檔案資訊錯誤:", error);
