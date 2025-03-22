@@ -56,7 +56,6 @@ class FolderTree {
         const urlParams = new URLSearchParams(window.location.search);
         let currentPage = parseInt(urlParams.get("page")) || 1;
 
-
         const folderData = await this.getData(folderId, currentPage);
         const folders = folderData.files.data;
         const totalPages = folderData.files.totalPages;
@@ -89,7 +88,7 @@ class FolderTree {
         }
 
         folders.forEach((folder) => {
-            if (!folder.filename || folder.fileType !== 'FOLDER' || this.file && (folder.id === this.file.id || folder.id === this.file.parentFolderId)) {
+            if (!folder.filename || folder.fileType !== 'FOLDER' || this.file && (folder.id === this.file.id)) {
                 return;
             }
 

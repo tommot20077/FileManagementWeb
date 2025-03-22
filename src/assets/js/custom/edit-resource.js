@@ -6,7 +6,7 @@ document.getElementById("add-new-folder").addEventListener('click', () => {
     document.getElementById("addFolderModal").classList.remove("hidden");
 });
 
-document.getElementById("addNewFolder").addEventListener('click', () => {
+document.getElementById("addNewFolder").addEventListener('click', async () => {
         const btn = document.getElementById("addNewFolder");
         const folderName = document.getElementById('newFolderName').value.trim();
         const errorContainer = document.getElementById('newFolderNameError');
@@ -17,27 +17,30 @@ document.getElementById("addNewFolder").addEventListener('click', () => {
         }
 
         buttonLoading(btn, true, '處理中...');
-
         try {
             const parentFolderId = currentFolderId === 0 ? null : currentFolderId;
-            webConnector.post('/folders', {
+            const response = await webConnector.post('/folders', {
                 filename: folderName,
                 parentFolderId: parentFolderId,
-            }).then(response => {
-                if (response.data.status === 200) {
-                    document.getElementById('newFolderName').value = '';
-                    document.getElementById("addFolderModal").classList.add("hidden");
-                    fetchFileList(currentFolderId).then();
-                } else {
-                    errorContainer.textContent = response.data.message || '新增資料夾失敗。';
-                }
             });
+
+            if (response.data.status === 200) {
+                document.getElementById('newFolderName').value = '';
+                document.getElementById("addFolderModal").classList.add("hidden");
+                fetchFileList(currentFolderId).then(() => {
+                    buttonLoading(btn, false, '新增');
+                });
+                $.NotificationApp.send("新增資料夾成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
+                return;
+            }
+            errorContainer.textContent = response.data.message || '新增資料夾失敗。';
+            Error(response.data.message)
+
         } catch (error) {
+            buttonLoading(btn, false, '新增');
             const errorMessages = error.response?.data?.message || error;
             $.NotificationApp.send(`${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
             errorContainer.textContent = errorMessages
-        } finally {
-            buttonLoading(btn, false, '新增');
         }
 
     }
@@ -143,6 +146,7 @@ function cleanFileInformation() {
     document.getElementById('renameFileNameError').textContent = '';
     document.getElementById("recursiveSettingSwitch").checked = false;
 }
+
 async function saveEditFile(isEditShare) {
     const fileName = document.getElementById('editFileName').value.trim();
     const fileId = document.getElementById('editFileId').value;
@@ -261,9 +265,6 @@ function cleanEditFile(e, isEditShare) {
 }
 
 
-
-
-
 document.getElementById("share-type").addEventListener('change', (e) => {
     const shareUsers = $('#shareUsers');
     if (e.target.value === 'NONE') {
@@ -272,9 +273,6 @@ document.getElementById("share-type").addEventListener('change', (e) => {
         shareUsers.prop('disabled', false);
     }
 })
-
-
-
 
 
 document.getElementById("addNewOnlineDocument").addEventListener('click', () => {

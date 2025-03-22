@@ -322,6 +322,7 @@ async function removeFile(fileId, isFolder) {
         webConnector.post(`/folders/remove/${fileId}`).then(response => {
             const status = response.data.status;
             if (status === 200) {
+                $.NotificationApp.send(`成功移動到回收站`, "", "bottom-right", "rgba(0,0,0,0.2)", "success");
                 fetchFileList(currentFolderId).then();
                 getUserInfo(true);
             }
@@ -333,6 +334,7 @@ async function removeFile(fileId, isFolder) {
         webConnector.post(`/files/remove/${fileId}`).then(response => {
             const status = response.data.status;
             if (status === 200) {
+                $.NotificationApp.send(`成功移動到回收站`, "", "bottom-right", "rgba(0,0,0,0.2)", "success");
                 fetchFileList(currentFolderId).then();
                 getUserInfo(true);
             }
@@ -350,6 +352,7 @@ async function restoreFile(fileId, isFolder) {
             if (status === 200) {
                 fetchFileList(currentFolderId).then();
                 getUserInfo(true);
+                $.NotificationApp.send(`成功還原資料夾`, "", "bottom-right", "rgba(0,0,0,0.2)", "success");
             }
         }).catch(error => {
             const errorMessages = error.response?.data?.message || error;
@@ -361,6 +364,7 @@ async function restoreFile(fileId, isFolder) {
             if (status === 200) {
                 fetchFileList(currentFolderId).then();
                 getUserInfo(true);
+                $.NotificationApp.send(`成功還原檔案`, "", "bottom-right", "rgba(0,0,0,0.2)", "success");
             }
         }).catch(error => {
             const errorMessages = error.response?.data?.message || error;

@@ -511,7 +511,7 @@
                                                             用戶檔案的歷程記錄列表，可以查看歷史版本，並還原到指定版本，當版本還原時，會自動為當前版本建立一個新的歷程記錄。
                                                         </div>
                                                         <br>
-                                                        <i class='text-warning'>請注意：每個檔案可以新建最多50個檔案歷程，超過50個歷程將自動刪除最早的歷程。</i>
+                                                        <i class='text-warning'>請注意：每個檔案可以新建最多30個檔案歷程，超過30個歷程將自動刪除最早的歷程。</i>
 
                                                         <h5 class="mt-3">歷程記錄</h5>
                                                         <div class="accordion" id="userHistoryList"></div>
@@ -530,14 +530,37 @@
                                             <div class="modal-dialog modal-dialog-centered">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
-                                                        <h5 class="modal-title" id="checkRevertModel">警告</h5>
+                                                        <h5 class="modal-title text-warning" id="checkRevertModel">警告</h5>
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body" id='checkRevertContent'>
-                                                        確認是否還原到此版本？
+                                                        確認還原到此版本？
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button class="btn btn-primary" id='checkRevertButton'>確認</button>
+                                                        <button class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                                    </div>
+                                                </div><!-- /.modal-content -->
+                                            </div><!-- /.modal-dialog -->
+                                        </div><!-- /.modal -->
+
+                                        <div class="modal fade"
+                                             id="checkDeleteToggle"
+                                             aria-hidden="true"
+                                             aria-labelledby="exampleModalToggleLabel"
+                                             tabindex="-1"
+                                             data-bs-backdrop="static">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title text-danger" id="checkDeleteModel">警告</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body" id='checkDeleteContent'>
+                                                        確認刪除此版本紀錄？
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button class="btn btn-primary" id='checkDeleteButton'>確認</button>
                                                         <button class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                                                     </div>
                                                 </div><!-- /.modal-content -->

@@ -147,7 +147,8 @@ async function getUserHistoryVersion () {
                         <strong>修改時間:</strong> ${content.modifiedTime} <br>
                         
                     </p>
-                    <button class="btn btn-primary btn-sm" data-id='${content.version}' data-bs-toggle="modal" href="#checkRevertToggle">還原</button>
+                    <button class="btn btn-info btn-sm" data-id='${content.version}' data-bs-toggle="modal" href="#checkRevertToggle">還原</button>
+                    <button class="btn btn-danger btn-sm" data-id='${content.version}' data-bs-toggle="modal" href="#checkDeleteToggle">刪除</button>
                 </div>`
 
             collapse.appendChild(cardBody);
@@ -155,12 +156,21 @@ async function getUserHistoryVersion () {
             historyList.appendChild(card);
         }))
 
-        const buttons = document.getElementById("userHistoryList").querySelectorAll('.btn.btn-primary.btn-sm');
-        buttons.forEach(button => {
+        const revertButtons = document.getElementById("userHistoryList").querySelectorAll('.btn.btn-info.btn-sm');
+        revertButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const id = this.getAttribute('data-id');
                 document.getElementById("checkRevertContent").innerHTML = '<p class="h4">確定要還原至版本 ' + `<a class="text-warning h4">${id}</a>`+ ' ?</p>';
                 document.getElementById("checkRevertButton").setAttribute("data-id", id);
+            });
+        });
+
+        const deleteButtons = document.getElementById("userHistoryList").querySelectorAll('.btn.btn-danger.btn-sm');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                document.getElementById("checkDeleteContent").innerHTML = '<p class="h4">確定要刪除版本 ' + `<a class="text-danger h4">${id}</a>`+ ' ?</p>';
+                document.getElementById("checkDeleteButton").setAttribute("data-id", id);
             });
         });
     });
@@ -222,6 +232,39 @@ async function getUserHistoryVersion () {
             const errorMessages = error.response?.data?.message || error;
             $.NotificationApp.send(`建立版本失敗: ${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         });
+    });
+
+
+    document.getElementById("checkDeleteButton").addEventListener("click", function() {
+        const id = this.getAttribute("data-id");
+        if(id === null) {
+            $.NotificationApp.send("版本ID不存在", "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        }
+        buttonLoading(this, true, "刪除中...");
+
+        const data = {
+            fileId: fileId,
+            filename: filename,
+            version: id,
+            editType: "DELETE_HISTORY_RECORD"
+        }
+        webConnector.put('/docs', JSON.stringify(data)).then((response) => {
+            if (response.data.status === 200) {
+                buttonLoading(this, false, "刪除");
+                $.NotificationApp.send("刪除成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
+                this.setAttribute("data-id", null);
+                this.setAttribute("disabled", "disabled");
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+                return
+            }
+            throw new Error(response.data.message || "刪除失敗");
+        }).catch((error) => {
+            buttonLoading(this, false, "刪除");
+            const errorMessages = error.response?.data?.message || error;
+            $.NotificationApp.send(`刪除失敗: ${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        })
     });
 }
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
