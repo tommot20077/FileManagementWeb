@@ -7,7 +7,7 @@ import webConnector from "./web-connector.js";
 
 async function getFileMetadata(fileId) {
     try {
-        const response = await webConnector.get(`${config.backendUrl}/web/v1/files/${fileId}/info`);
+        const response = await webConnector.get(`${config.backendUrl}/web/v1/files/${fileId}/info`, {xsrfCookieName: "useless"});
 
         if (response.status !== 200) {
             new Error("無法獲取檔案資訊");

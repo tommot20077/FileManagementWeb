@@ -6,6 +6,24 @@ import {logout} from "./logout-main.js";
 
 let fileId = null;
 let filename = null;
+let hasChanged = false;
+
+let quill = new Quill("#editor", {
+    theme: "snow",
+    modules: {
+        toolbar: [
+            [{font: []}, {size: []}],
+            ["bold", "italic", "underline", "strike"],
+            [{color: []}, {background: []}],
+            [{script: "super"}, {script: "sub"}],
+            [{header: [!1, 1, 2, 3, 4, 5, 6]}, "blockquote", "code-block"],
+            [{list: "ordered"}, {list: "bullet"}, {indent: "-1"}, {indent: "+1"}],
+            ["direction", {align: []}],
+            ["link"], ["clean"]
+        ],
+        syntax: {hljs},
+    }
+});
 document.addEventListener("DOMContentLoaded", function () {
     if (window.name) {
         let file = JSON.parse(window.name);
@@ -32,6 +50,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = {ops: response.data.data.content.delta};
             quill.setContents(new Delta(data));
             filename = response.data.data.filename;
+            quill.on("text-change", function () {
+                console.log("內容已更改");
+                hasChanged = true;
+            });
             return
         }
         throw new Error(response.data.message || "文件不存在");
@@ -40,25 +62,16 @@ document.addEventListener("DOMContentLoaded", function () {
         $.NotificationApp.send(`${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     });
 
-    getUserHistoryVersion().then(r => {});
+    getUserHistoryVersion().then(r => {
+    });
+});
 
-});
-let quill = new Quill("#editor", {
-    theme: "snow",
-    modules: {
-        toolbar: [
-            [{font: []}, {size: []}],
-            ["bold", "italic", "underline", "strike"],
-            [{color: []}, {background: []}],
-            [{script: "super"}, {script: "sub"}],
-            [{header: [!1, 1, 2, 3, 4, 5, 6]}, "blockquote", "code-block"],
-            [{list: "ordered"}, {list: "bullet"}, {indent: "-1"}, {indent: "+1"}],
-            ["direction", {align: []}],
-            ["link"], ["clean"]
-        ],
-        syntax: {hljs},
+window.onbeforeunload = function (e) {
+    if (hasChanged) {
+        e.preventDefault();
+        return "您的文件尚未保存，確定要離開嗎？";
     }
-});
+}
 
 document.getElementById("back-btn").addEventListener("click", function () {
     window.history.back();
@@ -66,7 +79,6 @@ document.getElementById("back-btn").addEventListener("click", function () {
 });
 
 document.getElementById("update-btn").addEventListener("click", function () {
-
     let doc = document.getElementById("update-btn");
     buttonLoading(doc, true, "更新中...");
 
@@ -87,6 +99,7 @@ document.getElementById("update-btn").addEventListener("click", function () {
         if (response.data.status === 200) {
             $.NotificationApp.send("更新成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
             buttonLoading(doc, false, "更新");
+            hasChanged = false;
             return
         }
         throw new Error(response.data.message || "更新失敗");
@@ -97,7 +110,7 @@ document.getElementById("update-btn").addEventListener("click", function () {
     })
 });
 
-async function getUserHistoryVersion () {
+async function getUserHistoryVersion() {
     if (!fileId) {
         $.NotificationApp.send("文件ID不存在", "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         return
@@ -138,7 +151,6 @@ async function getUserHistoryVersion () {
             cardBody.className = "card-body";
 
 
-
             cardBody.innerHTML = `        
                 <div class="card-body">
                     <p class="card-text">
@@ -158,26 +170,26 @@ async function getUserHistoryVersion () {
 
         const revertButtons = document.getElementById("userHistoryList").querySelectorAll('.btn.btn-info.btn-sm');
         revertButtons.forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 const id = this.getAttribute('data-id');
-                document.getElementById("checkRevertContent").innerHTML = '<p class="h4">確定要還原至版本 ' + `<a class="text-warning h4">${id}</a>`+ ' ?</p>';
+                document.getElementById("checkRevertContent").innerHTML = '<p class="h4">確定要還原至版本 ' + `<a class="text-warning h4">${id}</a>` + ' ?</p>';
                 document.getElementById("checkRevertButton").setAttribute("data-id", id);
             });
         });
 
         const deleteButtons = document.getElementById("userHistoryList").querySelectorAll('.btn.btn-danger.btn-sm');
         deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 const id = this.getAttribute('data-id');
-                document.getElementById("checkDeleteContent").innerHTML = '<p class="h4">確定要刪除版本 ' + `<a class="text-danger h4">${id}</a>`+ ' ?</p>';
+                document.getElementById("checkDeleteContent").innerHTML = '<p class="h4">確定要刪除版本 ' + `<a class="text-danger h4">${id}</a>` + ' ?</p>';
                 document.getElementById("checkDeleteButton").setAttribute("data-id", id);
             });
         });
     });
 
-    document.getElementById("checkRevertButton").addEventListener("click", function() {
+    document.getElementById("checkRevertButton").addEventListener("click", function () {
         const id = this.getAttribute("data-id");
-        if(id === null) {
+        if (id === null) {
             $.NotificationApp.send("版本ID不存在", "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         }
         buttonLoading(this, true, "復原中...");
@@ -194,6 +206,7 @@ async function getUserHistoryVersion () {
                 $.NotificationApp.send("還原成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
                 this.setAttribute("data-id", null);
                 this.setAttribute("disabled", "disabled");
+                hasChanged = false;
                 setTimeout(() => {
                     window.location.reload();
                 }, 2000);
@@ -207,7 +220,7 @@ async function getUserHistoryVersion () {
         })
     });
 
-    document.getElementById("checkBuildHistoryBottom").addEventListener("click", function() {
+    document.getElementById("checkBuildHistoryBottom").addEventListener("click", function () {
         let note = document.getElementById("NewHistoryNote").value;
         buttonLoading(this, true, "建立中...");
         const data = {
@@ -223,6 +236,7 @@ async function getUserHistoryVersion () {
                 $.NotificationApp.send("建立版本成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
                 buttonLoading(this, false, "建立");
                 this.setAttribute("disabled", "disabled");
+                hasChanged = false;
                 setTimeout(() => {
                     window.location.reload();
                 }, 2000);
@@ -235,9 +249,9 @@ async function getUserHistoryVersion () {
     });
 
 
-    document.getElementById("checkDeleteButton").addEventListener("click", function() {
+    document.getElementById("checkDeleteButton").addEventListener("click", function () {
         const id = this.getAttribute("data-id");
-        if(id === null) {
+        if (id === null) {
             $.NotificationApp.send("版本ID不存在", "", "bottom-right", "rgba(0,0,0,0.2)", "error");
         }
         buttonLoading(this, true, "刪除中...");
@@ -267,5 +281,6 @@ async function getUserHistoryVersion () {
         })
     });
 }
+
 document.getElementById("logoutBtn")?.addEventListener("click", logout);
 

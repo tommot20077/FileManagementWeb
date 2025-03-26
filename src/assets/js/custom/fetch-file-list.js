@@ -31,6 +31,12 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
 
         tbody.innerHTML = '';
 
+        files.sort((a, b) => {
+            const typeOrder = { "FOLDER": 0, "ONLINE_DOCUMENT": 1, "FILE": 2 };
+            const typeComparison = typeOrder[a.fileType] - typeOrder[b.fileType];
+            return typeComparison !== 0 ? typeComparison : a.filename.localeCompare(b.filename, undefined, { sensitivity: 'base' });
+        });
+
         files.forEach(file => {
             const tr = document.createElement('tr');
 
