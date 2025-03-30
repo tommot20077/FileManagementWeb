@@ -385,7 +385,7 @@ function updateBreadcrumb(filePaths) {
     filePaths.reverse().forEach((folder, index) => {
         const breadcrumbItem = document.createElement('li');
         breadcrumbItem.classList.add('breadcrumb-item');
-        if (folder.folderId == null) {
+        if (folder.folderId == null || folder.folderId === 0) {
             folder.folderId = 0;
             folder.name = '根目錄';
         }

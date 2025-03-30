@@ -80,3 +80,9 @@
 .card-body .page-aside-right .table-responsive {
     min-height: 500px !important;
 }
+
+.side-nav-link.disabled {
+    color:var(--ct-list-group-disabled-color);
+    pointer-events:none;
+    background-color:var(--ct-list-group-disabled-bg);
+}
