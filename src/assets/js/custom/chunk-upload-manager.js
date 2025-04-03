@@ -1,5 +1,5 @@
 import SparkMD5 from 'spark-md5';
-import Config from "../../../../config.js";
+import Config from "../../../../config/config.js";
 import webConnector from "./web-connector.js";
 import { WSConnector } from "./ws-connectoer.js";
 
@@ -215,6 +215,7 @@ class ChunkUploadManager {
                         chunkIndex: chunkIndex,
                         chunkData: base64String,
                         totalChunks: this.totalChunks,
+                        md5: currentChunkMd5,
                     },
                 };
 

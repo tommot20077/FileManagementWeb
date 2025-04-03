@@ -1,5 +1,5 @@
 import axios from "axios";
-import Config from "../../../../config";
+import Config from "../../../../config/config.js";
 async function fetchCsrfToken() {
     try {
         const response = await axios.get(`${Config.backendUrl}/api/v1/guest/csrf/token`, { withCredentials: true });

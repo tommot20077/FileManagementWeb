@@ -1,4 +1,4 @@
-import config from "../../../../config.js";
+import config from "../../../../config/config.js";
 import videojs from "video.js";
 import 'video.js/dist/video-js.css';
 import '@videojs/themes/dist/sea/index.css';

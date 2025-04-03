@@ -1,6 +1,6 @@
 import webConnector from "./web-connector.js";
 import {formatFileSize, reservedPath, updatePaginationControls} from "./tool.js";
-import config from "../../../../config.js";
+import config from "../../../../config/config.js";
 import {loadEditData, openEditFileModal} from "./edit-resource.js";
 import {openMoveFileModal} from "./folder-tree.js";
 import streamSaver from 'streamsaver';
@@ -31,8 +31,16 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
 
         tbody.innerHTML = '';
 
+        const typeOrder = { "FOLDER": 0, "ONLINE_DOCUMENT": 1};
+
         files.sort((a, b) => {
-            const typeOrder = { "FOLDER": 0, "ONLINE_DOCUMENT": 1, "FILE": 2 };
+            if (typeOrder[a.fileType] === undefined) {
+                typeOrder[a.fileType] = Object.keys(typeOrder).length;
+            }
+            if (typeOrder[b.fileType] === undefined) {
+                typeOrder[b.fileType] = Object.keys(typeOrder).length;
+            }
+
             const typeComparison = typeOrder[a.fileType] - typeOrder[b.fileType];
             return typeComparison !== 0 ? typeComparison : a.filename.localeCompare(b.filename, undefined, { sensitivity: 'base' });
         });

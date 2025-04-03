@@ -1,6 +1,6 @@
 import Dropzone from 'dropzone';
 import SparkMD5 from 'spark-md5';
-import Config from "../../../../config.js";
+import Config from "../../../../config/config.js";
 import uploadManager from "./upload-manager.js";
 
 import ChunkUploadManager from "./chunk-upload-manager.js";

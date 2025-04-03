@@ -36,6 +36,31 @@
 
 ---
 
+## 安裝說明
+
+### 1. **環境要求**
+
+- **docker**: 20.10.0+
+- **docker-compose**: 1.29.2+
+
+### 2. **安裝步驟**
+
+1. 下載位於 [/docker](https://github.com/tommot20077/FileManagement/tree/develop/docker/src) 內的 `docker-compose.yml`
+   以及 `Dockerfile` 檔案
+2. 於放置 `docker-compose.yml` 的資料夾內執行以下指令
+    ```bash
+    docker-compose up -d
+    ```
+3. 於瀏覽器輸入 `http://localhost:8078` 即可進入前端頁面
+4. 若要關閉服務，請執行以下指令
+    ```bash
+    docker-compose down
+    ```
+
+**注意:**
+此處安裝只包含前端，如果需要啟動則還需要安裝後端 [點擊前往](https://github.com/tommot20077/FileManagement)
+---
+
 ## 總結
 
 本前端專案以 **簡潔、易維護、快速開發**

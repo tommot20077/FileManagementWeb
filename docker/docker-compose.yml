@@ -1,0 +1,27 @@
+version: '3'
+services:
+  filemanager_front:
+    build:
+      dockerfile: Dockerfile-front
+      context: .
+    container_name: filemanager_front
+    image: filemanager_front
+    restart: on-failure:3
+    ports:
+      - "10890:5180"
+    # networks:
+    #   - my_network
+    volumes:
+      - ./front-config:/app/config
+    entrypoint: |
+      sh -c '
+      if [ ! -f /app/config/config.js ]; then
+        echo "配置文件不存在，正在複製預設配置...";
+        cp -v /app/temp/config.js /app/config/config.js;
+      fi
+      echo "啟動前端應用...";
+      exec npm run main
+      '
+    # networks:
+      # my_network:
+        # driver: bridge
