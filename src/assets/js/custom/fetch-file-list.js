@@ -31,7 +31,7 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
 
         tbody.innerHTML = '';
 
-        const typeOrder = { "FOLDER": 0, "ONLINE_DOCUMENT": 1};
+        const typeOrder = {"FOLDER": 0, "ONLINE_DOCUMENT": 1};
 
         files.sort((a, b) => {
             if (typeOrder[a.fileType] === undefined) {
@@ -42,7 +42,7 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
             }
 
             const typeComparison = typeOrder[a.fileType] - typeOrder[b.fileType];
-            return typeComparison !== 0 ? typeComparison : a.filename.localeCompare(b.filename, undefined, { sensitivity: 'base' });
+            return typeComparison !== 0 ? typeComparison : a.filename.localeCompare(b.filename, undefined, {sensitivity: 'base'});
         });
 
         files.forEach(file => {
@@ -148,7 +148,7 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
             const chooseActions = parseInt(String(folderId)) === -4 ? recycleActions : normalActions;
 
             chooseActions.forEach(action => {
-                if (file.fileType === 'FOLDER' && (action.text === '預覽' || action.text === '下載')) {
+                if (file.fileType === 'FOLDER' && action.text === '預覽') {
                     return;
                 }
                 if (file.fileType === 'ONLINE_DOCUMENT' && action.text === '下載') {
@@ -181,7 +181,11 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
                 } else if (action.text === '下載') {
                     actionItem.addEventListener('click', async (e) => {
                         e.preventDefault();
-                        await getFileResource(file.id, 'download');
+                        if (file.fileType === 'FOLDER') {
+                            await getFolderResource(file.id);
+                        } else {
+                            await getFileResource(file.id, 'download');
+                        }
                     });
                 } else if (action.text === '移動到回收桶') {
                     actionItem.addEventListener('click', async (e) => {
@@ -261,30 +265,10 @@ async function getFileResource(fileId, action) {
         if (action === "preview") {
             window.open(`/preview?id=${fileId}`, '_blank');
         } else {
-            const response = await fetch(`${config.backendUrl}/web/v1/files/${fileId}?action=download`, {
+            await fetch(`${config.backendUrl}/web/v1/files/${fileId}?action=download`, {
                 method: 'GET',
                 credentials: 'include'
-            });
-
-            if (!response.ok) {
-                new Error('下載失敗');
-            }
-
-            const filename = getFilenameFromHeaders(response.headers);
-            const fileStream = streamSaver.createWriteStream(filename, {
-                size: response.headers.get('Content-Length')
-            })
-
-            const readableStream = response.body;
-            if (window.WritableStream && readableStream.pipeTo) {
-                return readableStream.pipeTo(fileStream).then(() => {
-                })
-            }
-            window.writer = fileStream.getWriter();
-            const reader = response.body.getReader();
-            const pump = () => reader.read().then(res => res.done ?
-                window.writer.close() : window.writer.write(res.value).then(pump))
-            await pump();
+            }).then(response => handleResponse(response));
         }
     } catch (error) {
         const errorMessages = error.response?.data?.message || error;
@@ -292,6 +276,40 @@ async function getFileResource(fileId, action) {
     }
 }
 
+async function getFolderResource(folderId) {
+    try {
+        await fetch(`${config.backendUrl}/web/v1/folders/${folderId}/download`, {
+            method: 'GET',
+            credentials: 'include'
+        }).then(response => handleResponse(response));
+
+    } catch (error) {
+        const errorMessages = error.response?.data?.message || error;
+        $.NotificationApp.send(`下載錯誤:${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+    }
+}
+
+async function handleResponse(response) {
+    if (!response.ok) {
+        new Error('下載失敗');
+    }
+
+    const filename = getFilenameFromHeaders(response.headers);
+    const fileStream = streamSaver.createWriteStream(filename, {
+        size: response.headers.get('Content-Length')
+    })
+
+    const readableStream = response.body;
+    if (window.WritableStream && readableStream.pipeTo) {
+        return readableStream.pipeTo(fileStream).then(() => {
+        })
+    }
+    window.writer = fileStream.getWriter();
+    const reader = response.body.getReader();
+    const pump = () => reader.read().then(res => res.done ?
+        window.writer.close() : window.writer.write(res.value).then(pump))
+    await pump();
+}
 
 function getFilenameFromHeaders(headers) {
     const contentDisposition = headers.get('Content-Disposition');
@@ -445,6 +463,7 @@ function getLabelName(file) {
     }
     return name;
 }
+
 function formatUrl(url, filter) {
     let params = "?";
 
@@ -498,4 +517,5 @@ function disableButton(folderId, isSearch) {
         document.getElementById("add-new-file-button").removeAttribute("disabled");
     }
 }
+
 export default {fetchFileList, currentFolderId};
