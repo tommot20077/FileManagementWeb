@@ -151,9 +151,6 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
                 if (file.fileType === 'FOLDER' && action.text === '預覽') {
                     return;
                 }
-                if (file.fileType === 'ONLINE_DOCUMENT' && action.text === '下載') {
-                    return;
-                }
                 if ((file.isStar && action.text === '加入星號') || (!file.isStar && action.text === '移除星號')) {
                     return;
                 }
@@ -183,6 +180,8 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
                         e.preventDefault();
                         if (file.fileType === 'FOLDER') {
                             await getFolderResource(file.id);
+                        } else if (file.fileType === 'ONLINE_DOCUMENT') {
+                            await getOnlineFileResource(file.id);
                         } else {
                             await getFileResource(file.id, 'download');
                         }
@@ -279,6 +278,19 @@ async function getFileResource(fileId, action) {
 async function getFolderResource(folderId) {
     try {
         await fetch(`${config.backendUrl}/web/v1/folders/${folderId}/download`, {
+            method: 'GET',
+            credentials: 'include'
+        }).then(response => handleResponse(response));
+
+    } catch (error) {
+        const errorMessages = error.response?.data?.message || error;
+        $.NotificationApp.send(`下載錯誤:${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+    }
+}
+
+async function getOnlineFileResource(fileId) {
+    try {
+        await fetch(`${config.backendUrl}/web/v1/docs/${fileId}?action=download`, {
             method: 'GET',
             credentials: 'include'
         }).then(response => handleResponse(response));
