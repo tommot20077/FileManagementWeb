@@ -8,6 +8,7 @@ import {getUserInfo} from "./user-info.js";
 
 export let currentFolderId = 0;
 const breadcrumb = document.getElementById('breadcrumb');
+let currentContextMenuFile = null;
 
 export async function fetchFileList(folderId = 0, updateUrl = true, filter = {}, isSearch = false) {
     currentFolderId = folderId;
@@ -47,6 +48,7 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
 
         files.forEach(file => {
             const tr = document.createElement('tr');
+            tr.dataset.file = JSON.stringify(file);
 
             const nameTd = document.createElement('td');
             nameTd.style.width = '400px';
@@ -128,105 +130,7 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
             const dropdownMenu = document.createElement('div');
             dropdownMenu.classList.add('dropdown-menu', 'dropdown-menu-end');
 
-            const normalActions = [
-                {icon: 'mdi-share-variant', text: '分享'},
-                {icon: 'mdi-link', text: '取得可分享連結'},
-                {icon: 'mdi-star', text: '加入星號'},
-                {icon: 'mdi-star-outline', text: '移除星號'},
-                {icon: 'mdi-pencil', text: '重新命名'},
-                {icon: 'mdi-file-move', text: '移動'},
-                {icon: 'mdi-eye', text: '預覽'},
-                {icon: 'mdi-download', text: '下載'},
-                {icon: 'mdi-trash-can', text: '移動到回收桶'},
-            ];
-
-            const recycleActions = [
-                {icon: 'mdi-restore', text: '還原'},
-                {icon: 'mdi-delete', text: '永久刪除'},
-            ];
-
-            const chooseActions = parseInt(String(folderId)) === -4 ? recycleActions : normalActions;
-
-            chooseActions.forEach(action => {
-                if (file.fileType === 'FOLDER' && action.text === '預覽') {
-                    return;
-                }
-                if ((file.isStar && action.text === '加入星號') || (!file.isStar && action.text === '移除星號')) {
-                    return;
-                }
-                const actionItem = document.createElement('a');
-                actionItem.href = '#';
-                actionItem.classList.add('dropdown-item', 'notify-item');
-
-                const actionIcon = document.createElement('i');
-                actionIcon.classList.add("mdi", action.icon, 'me-2', 'text-muted', 'vertical-middle');
-                actionItem.appendChild(actionIcon);
-
-                const actionText = document.createElement('span');
-                actionText.textContent = action.text;
-                actionItem.appendChild(actionText);
-
-                if (action.text === '預覽') {
-                    actionItem.addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        if (file.fileType === 'ONLINE_DOCUMENT') {
-                            await openEditor(file);
-                        } else {
-                            await getFileResource(file.id, 'preview');
-                        }
-                    });
-                } else if (action.text === '下載') {
-                    actionItem.addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        if (file.fileType === 'FOLDER') {
-                            await getFolderResource(file.id);
-                        } else if (file.fileType === 'ONLINE_DOCUMENT') {
-                            await getOnlineFileResource(file.id);
-                        } else {
-                            await getFileResource(file.id, 'download');
-                        }
-                    });
-                } else if (action.text === '移動到回收桶') {
-                    actionItem.addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        await removeFile(file.id, file.fileType === 'FOLDER');
-                    });
-                } else if (action.text === '重新命名') {
-                    actionItem.addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        await openEditFileModal(file, false);
-                    });
-                } else if (action.text === '移動') {
-                    actionItem.addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        await openMoveFileModal(file);
-                    });
-                } else if (action.text === '加入星號' || action.text === '移除星號') {
-                    actionItem.addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        loadEditData(file)
-                        document.getElementById("isStar").value = '加入星號' === action.text;
-                        document.getElementById('saveRenameEditFile').click();
-                    });
-                } else if (action.text === '永久刪除') {
-                    actionItem.addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        await deleteFile(file.id, file.fileType === 'FOLDER');
-                    });
-                } else if (action.text === '還原') {
-                    actionItem.addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        await restoreFile(file.id, file.fileType === 'FOLDER');
-                    });
-                } else if (action.text === '分享') {
-                    actionItem.addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        await openEditFileModal(file, true);
-                    });
-                }
-
-                dropdownMenu.appendChild(actionItem);
-            });
+            generateActionItems(dropdownMenu, file, isRecycle);
 
             btnGroup.appendChild(dropdownMenu);
             actionsTd.appendChild(btnGroup);
@@ -247,11 +151,116 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
             let newUrl = isSearch ? `/web/files/search` : `/web/folder/${anotherPathname}`;
             window.history.pushState(filter, '', formatUrl(newUrl, filter));
         }
+
+
+        if (!tbody.dataset.contextBound) {
+            tbody.addEventListener('contextmenu', (event) => {
+                const tr = event.target.closest('tr');
+                if (!tr || !tbody.contains(tr)) return;
+
+                event.preventDefault();
+
+                document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+                    const instance = bootstrap.Dropdown.getInstance(toggle);
+                    if (instance) {
+                        instance.hide();
+                    }
+                });
+
+                const clickedFile = JSON.parse(tr.dataset.file);
+                currentContextMenuFile = clickedFile;
+
+                const isRecycle = parseInt(String(currentFolderId)) === -4;
+                const contextDropdown = document.getElementById('contextDropdownContainer');
+                const contextMenu = document.getElementById('contextDropdownMenu');
+                const contextToggle = document.getElementById('contextDropdownToggle');
+
+                contextMenu.innerHTML = '';
+                generateActionItems(contextMenu, clickedFile, isRecycle);
+
+                const container = document.querySelector('.table-responsive');
+                const containerRect = container.getBoundingClientRect();
+
+                const left = event.clientX - containerRect.left + container.scrollLeft;
+                const top = event.clientY - containerRect.top + container.scrollTop;
+
+                contextDropdown.style.left = `${left}px`;
+                contextDropdown.style.top = `${top}px`;
+                contextDropdown.style.display = 'block';
+
+                const oldInstance = bootstrap.Dropdown.getInstance(contextToggle);
+                if (oldInstance) oldInstance.dispose();
+
+                const bsDropdown = new bootstrap.Dropdown(contextToggle);
+                bsDropdown.show();
+            });
+
+            tbody.dataset.contextBound = 'true';
+        }
     } catch (error) {
         const errorMessages = error.response?.data?.message || error;
         $.NotificationApp.send(`${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
 }
+
+
+document.addEventListener('click', async (event) => {
+    const actionItem = event.target.closest('.dropdown-item[data-action]');
+    if (!actionItem) return;
+
+    event.preventDefault();
+
+    const action = actionItem.dataset.action;
+    const file = JSON.parse(actionItem.dataset.file)
+    const isFolder = file.fileType === 'FOLDER';
+
+    document.querySelectorAll('.dropdown-menu.show')?.forEach(menu => menu.classList.remove('show'));
+
+    switch (action) {
+        case '預覽':
+            if (file.fileType === 'ONLINE_DOCUMENT') {
+                await openEditor(file);
+            } else {
+                await getFileResource(file.id, 'preview');
+            }
+            break;
+        case '下載':
+            if (file.fileType === 'FOLDER') {
+                await getFolderResource(file.id);
+            } else if (file.fileType === 'ONLINE_DOCUMENT') {
+                await getOnlineFileResource(file.id);
+            } else {
+                await getFileResource(file.id, 'download');
+            }
+            break;
+        case '移動到回收桶':
+            await removeFile(file.id, isFolder);
+            break;
+        case '永久刪除':
+            await deleteFile(file.id, isFolder);
+            break;
+        case '還原':
+            await restoreFile(file.id, isFolder);
+            break;
+        case '重新命名':
+            await openEditFileModal(file, false);
+            break;
+        case '移動':
+            await openMoveFileModal(file);
+            break;
+        case '分享':
+            await openEditFileModal(file, true);
+            break;
+        case '加入星號':
+        case '移除星號':
+            loadEditData(file);
+            document.getElementById("isStar").value = (action === '加入星號');
+            document.getElementById('saveRenameEditFile').click();
+            break;
+        default:
+            console.warn('未知操作：', action);
+    }
+});
 
 async function openEditor(file) {
     window.name = JSON.stringify(file);
@@ -528,6 +537,52 @@ function disableButton(folderId, isSearch) {
     } else {
         document.getElementById("add-new-file-button").removeAttribute("disabled");
     }
+}
+
+function generateActionItems(targetMenuElement, file, isRecycle) {
+    targetMenuElement.innerHTML = '';
+
+    const normalActions = [
+        {icon: 'mdi-share-variant', text: '分享', condition: () => !isRecycle},
+        {icon: 'mdi-link', text: '取得可分享連結', condition: () => !isRecycle},
+        {icon: 'mdi-star', text: '加入星號', condition: (f) => !isRecycle && !f.isStar},
+        {icon: 'mdi-star-outline', text: '移除星號', condition: (f) => !isRecycle && f.isStar},
+        {icon: 'mdi-pencil', text: '重新命名', condition: () => !isRecycle},
+        {icon: 'mdi-file-move', text: '移動', condition: () => !isRecycle},
+        {icon: 'mdi-eye', text: '預覽', condition: (f) => !isRecycle && f.fileType !== 'FOLDER'},
+        {icon: 'mdi-download', text: '下載', condition: () => !isRecycle},
+        {icon: 'mdi-trash-can', text: '移動到回收桶', condition: () => !isRecycle},
+    ];
+
+    const recycleActions = [
+        {icon: 'mdi-restore', text: '還原', condition: () => isRecycle},
+        {icon: 'mdi-delete', text: '永久刪除', condition: () => isRecycle},
+    ];
+
+    const chooseActions = isRecycle ? recycleActions : normalActions;
+
+    chooseActions.forEach(action => {
+        if (action.condition && !action.condition(file)) {
+            return;
+        }
+
+        const actionItem = document.createElement('a');
+        actionItem.href = '#';
+        actionItem.classList.add('dropdown-item', 'notify-item');
+        actionItem.dataset.action = action.text;
+        actionItem.dataset.file = JSON.stringify(file)
+
+
+        const actionIcon = document.createElement('i');
+        actionIcon.classList.add("mdi", action.icon, 'me-2', 'text-muted', 'vertical-middle');
+        actionItem.appendChild(actionIcon);
+
+        const actionText = document.createElement('span');
+        actionText.textContent = action.text;
+        actionItem.appendChild(actionText);
+
+        targetMenuElement.appendChild(actionItem);
+    });
 }
 
 export default {fetchFileList, currentFolderId};
