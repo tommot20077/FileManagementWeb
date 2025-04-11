@@ -1,7 +1,7 @@
 import SparkMD5 from 'spark-md5';
 import Config from "../../../../config/config.js";
 import webConnector from "./web-connector.js";
-import { WSConnector } from "./ws-connectoer.js";
+import {WSConnector} from "./ws-connectoer.js";
 
 class ChunkUploadManager {
     constructor(file, uploadMethod, onProgress, onComplete, onError, maxConcurrentChunks = 5, jwtToken) {
@@ -19,6 +19,7 @@ class ChunkUploadManager {
         this.ws = null; // 只在 WebSocket 方法中使用
         this.retryCounts = {};
         this.jwtToken = jwtToken;
+        this.hasFailed = false;
     }
 
     start() {
@@ -76,12 +77,11 @@ class ChunkUploadManager {
                 this.onProgress(0, 'failed', `上傳失敗: ${response.message}`);
                 this.onError(new Error(response.message));
                 this.ws.close();
-            }
-            else if (response.message === "上傳任務完成") {
-                    this.onProgress(100, 'completed', '上傳完成');
-                    this.file.uploadStatus = 'success';
-                    this.onComplete();
-                    this.ws.close();
+            } else if (response.message === "上傳任務完成") {
+                this.onProgress(100, 'completed', '上傳完成');
+                this.file.uploadStatus = 'success';
+                this.onComplete();
+                this.ws.close();
             } else if (response.message === "分塊上傳成功") {
                 this.onProgress(response.data.progress, 'uploading', `上傳中 ${response.data.progress}%`);
                 this.currentConcurrent--;
@@ -89,6 +89,9 @@ class ChunkUploadManager {
             } else if (response.message.includes("分塊上傳失敗")) {
                 const chunkIndex = response.data.chunkIndex != null ? response.data.chunkIndex : 0;
                 this.handleChunkError(chunkIndex, new Error(response.data.message));
+                if (this.hasFailed && this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.close();
+                }
             } else {
                 this.onProgress(0, 'failed', `連線失敗: ${response.message}`);
                 this.onError(new Error(response.message));
@@ -124,6 +127,7 @@ class ChunkUploadManager {
     }
 
     processQueue() {
+        if (this.hasFailed) return;
         while (this.currentConcurrent < this.maxConcurrentChunks && this.queue.length > 0) {
             const chunkIndex = this.queue.shift();
             this.currentConcurrent++;
@@ -135,13 +139,17 @@ class ChunkUploadManager {
                         this.processQueue();
                     })
                     .catch((err) => {
+                        console.error("收到錯誤:", err);
                         this.currentConcurrent--;
-                        this.onError(err);
-                        this.processQueue();
+                        this.handleChunkError(chunkIndex, err);
+                        if (!this.hasFailed && (this.queue.length > 0 || this.currentConcurrent > 0)) {
+                            this.processQueue();
+                        }
                     });
             } else if (this.uploadMethod === 'ws') {
                 this.uploadChunkWs(chunkIndex)
-                    .then(() => {})
+                    .then(() => {
+                    })
                     .catch((err) => {
                         this.handleChunkError(chunkIndex, err);
                         this.processQueue();
@@ -166,14 +174,12 @@ class ChunkUploadManager {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const base64String = arrayBufferToBase64(e.target.result);
-                const currentChunkMd5 = calculateMD5BlobSync(e.target.result);
 
                 const uploadChunkDTO = {
                     transferTaskId: this.transferTaskId,
                     totalChunks: this.totalChunks,
                     chunkIndex: chunkIndex,
                     chunkData: base64String,
-                    md5: currentChunkMd5
                 };
 
                 webConnector.post(`/files/upload-chunk`, uploadChunkDTO)
@@ -206,7 +212,6 @@ class ChunkUploadManager {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const base64String = arrayBufferToBase64(e.target.result);
-                const currentChunkMd5 = calculateMD5BlobSync(e.target.result);
 
                 const bufferUploadMessage = {
                     type: "bufferUpload",
@@ -215,7 +220,6 @@ class ChunkUploadManager {
                         chunkIndex: chunkIndex,
                         chunkData: base64String,
                         totalChunks: this.totalChunks,
-                        md5: currentChunkMd5,
                     },
                 };
 
@@ -231,13 +235,23 @@ class ChunkUploadManager {
 
     handleChunkError(chunkIndex, error) {
         const maxRetries = Config.maxChunkRetries || 3;
-        this.retryCounts[chunkIndex] += 1;
+        this.retryCounts[chunkIndex] = (this.retryCounts[chunkIndex] || 0) + 1;
+
         if (this.retryCounts[chunkIndex] <= maxRetries) {
             console.warn(`分塊 ${chunkIndex} 上傳失敗，正在重試 (${this.retryCounts[chunkIndex]}/${maxRetries})`);
-            this.queue.push(chunkIndex); // 重新加入隊列
+            this.queue.push(chunkIndex);
         } else {
             $.NotificationApp.send(`分塊 ${chunkIndex} 上傳失敗，已達最大重試次數`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
-            this.onError(new Error(`分塊 ${chunkIndex} 上傳失敗，請稍後再試。`));
+            this.onError(new Error(`分塊 ${chunkIndex} 上傳失敗，錯誤內容: ${error}。`));
+            this.hasFailed = true;
+            this.queue = [];
+            this.currentConcurrent--;
+            if (this.currentConcurrent < 0) {
+                this.currentConcurrent = 0;
+            }
+            this.file.uploadStatus = 'failed';
+            this.onProgress(0, 'failed', `分塊 ${chunkIndex} 上傳失敗，錯誤原因: ${error.message || error}`);
+            this.onError(new Error(`分塊 ${chunkIndex} 上傳失敗，錯誤內容: ${error.message || error}。已達最大重試次數。`));
         }
     }
 }
