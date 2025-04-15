@@ -29,7 +29,7 @@ export function getUserInfo(storageOnly = false) {
 
                 const bar = container.querySelector('.progress-bar');
                 const text = container.querySelector('.text-muted');
-                const percent = response.data.data.storageLimit === -1 ? 0 : Math.round(response.data.data.usedStorage / response.data.data.storageLimit * 100).toFixed(2);
+                const percent = response.data.data.storageLimit === -1 ? 0 :  (response.data.data.usedStorage / response.data.data.storageLimit * 100).toFixed(2);
                 if (percent >90) {
                     bar.classList.add('bg-danger');
                 } else if (percent > 70) {
@@ -38,6 +38,7 @@ export function getUserInfo(storageOnly = false) {
                     bar.classList.add('bg-success');
                 }
                 bar.style.width = `${percent}%`;
+
                 if (response.data.data.storageLimit === -1) {
                     text.textContent = `${formatFileSize(response.data.data.usedStorage)}\u00A0(${percent}%)\u00A0\u00A0/\u00A0\u00A0無限制`;
                 } else {

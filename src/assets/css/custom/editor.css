@@ -2,3 +2,9 @@
     overflow-y: auto;
     height: 600px;
 }
+
+
+.page-title-box .page-title-right {
+    display: block !important;
+}
+

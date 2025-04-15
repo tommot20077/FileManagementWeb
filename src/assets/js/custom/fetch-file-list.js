@@ -3,8 +3,8 @@ import {formatFileSize, reservedPath, updatePaginationControls} from "./tool.js"
 import config from "../../../../config/config.js";
 import {loadEditData, openEditFileModal} from "./edit-resource.js";
 import {openMoveFileModal} from "./folder-tree.js";
-import streamSaver from 'streamsaver';
 import {getUserInfo} from "./user-info.js";
+import {handleResponse} from "./component.js";
 
 export let currentFolderId = 0;
 const breadcrumb = document.getElementById('breadcrumb');
@@ -308,40 +308,6 @@ async function getOnlineFileResource(fileId) {
         const errorMessages = error.response?.data?.message || error;
         $.NotificationApp.send(`下載錯誤:${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
-}
-
-async function handleResponse(response) {
-    if (!response.ok) {
-        new Error('下載失敗');
-    }
-
-    const filename = getFilenameFromHeaders(response.headers);
-    const fileStream = streamSaver.createWriteStream(filename, {
-        size: response.headers.get('Content-Length')
-    })
-
-    const readableStream = response.body;
-    if (window.WritableStream && readableStream.pipeTo) {
-        return readableStream.pipeTo(fileStream).then(() => {
-        })
-    }
-    window.writer = fileStream.getWriter();
-    const reader = response.body.getReader();
-    const pump = () => reader.read().then(res => res.done ?
-        window.writer.close() : window.writer.write(res.value).then(pump))
-    await pump();
-}
-
-function getFilenameFromHeaders(headers) {
-    const contentDisposition = headers.get('Content-Disposition');
-    if (contentDisposition) {
-        const filenameMatch =
-            contentDisposition.match(/filename\*=UTF-8''([^;]+)/i) ||
-            contentDisposition.match(/filename="?(.+)"?/i);
-
-        return filenameMatch ? decodeURIComponent(filenameMatch[1]) : 'download';
-    }
-    return 'download';
 }
 
 async function deleteFile(fileId, isFolder) {
