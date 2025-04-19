@@ -1,9 +1,9 @@
 import webConnector from "./web-connector.js";
-import {formatFileSize, reservedPath, updatePaginationControls} from "./tool.js";
+import {copyToClipboard, formatFileSize, reservedPath, updatePaginationControls} from "./tool.js";
 import config from "../../../../config/config.js";
 import {loadEditData, openEditFileModal} from "./edit-resource.js";
 import {openMoveFileModal} from "./folder-tree.js";
-import {getUserInfo} from "./user-info.js";
+import {getUserInfo, isGuest} from "./user-info.js";
 import {handleResponse} from "./component.js";
 
 export let currentFolderId = 0;
@@ -15,13 +15,13 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
     let response;
     try {
         disableButton(folderId, isSearch);
-        let url = isSearch ? `/files/search` : `/folders/${folderId}`;
+
+        let url = isSearch ? `/files/search` : `/folders/${formatSpecificPath(folderId)}`;
 
         response = await webConnector.get(formatUrl(url, filter), {xsrfCookieName: "useless"});
         const files = response.data.data.files.data;
         const tbody = document.querySelector('.table-responsive tbody');
-        const username = response.data.data.username;
-        const userId = response.data.data.userId;
+        const owner = response.data.data.owner;
         const filePaths = response.data.data.filePaths;
         const totalPages = response.data.data.files.totalPages;
         const currentPage = response.data.data.files.currentPage;
@@ -85,14 +85,14 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
             modifiedP.textContent = file.lastAccessTime;
             const modifiedSpan = document.createElement('span');
             modifiedSpan.classList.add('font-12');
-            modifiedSpan.textContent = `由 ${username}`;
+            modifiedSpan.textContent = `由 ${owner}`;
             modifiedTd.appendChild(modifiedP);
             modifiedTd.appendChild(modifiedSpan);
             tr.appendChild(modifiedTd);
 
             const sizeTd = document.createElement('td');
             const ownerTd = document.createElement('td');
-            ownerTd.textContent = username;
+            ownerTd.textContent = owner;
             if (file.fileType !== 'FOLDER') {
                 sizeTd.textContent = formatFileSize(file.fileSize);
             } else {
@@ -255,8 +255,19 @@ document.addEventListener('click', async (event) => {
         case '移除星號':
             loadEditData(file);
             document.getElementById("isStar").value = (action === '加入星號');
-            document.getElementById('saveRenameEditFile').click();
+            document.getElementById('saveRenameEditFile')?.click();
             break;
+        case '取得可分享連結':
+            let link
+            if (file.fileType === 'FOLDER') {
+                link = `${window.location.origin}/web/folder/${file.id}`;
+            } else if (file.fileType === 'ONLINE_DOCUMENT') {
+                link = `${window.location.origin}/editor?id=${file.id}`;
+            } else {
+                link = `${window.location.origin}/preview?id=${file.id}`;
+            }
+            await copyToClipboard(link);
+            break
         default:
             console.warn('未知操作：', action);
     }
@@ -279,7 +290,7 @@ async function getFileResource(fileId, action) {
             }).then(response => handleResponse(response));
         }
     } catch (error) {
-        const errorMessages = error.response?.data?.message || error;
+        const errorMessages = error.response?.data?.message || error.message;
         $.NotificationApp.send(`下載錯誤:${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
 }
@@ -292,7 +303,7 @@ async function getFolderResource(folderId) {
         }).then(response => handleResponse(response));
 
     } catch (error) {
-        const errorMessages = error.response?.data?.message || error;
+        const errorMessages = error.response?.data?.message || error.message;
         $.NotificationApp.send(`下載錯誤:${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
 }
@@ -305,7 +316,7 @@ async function getOnlineFileResource(fileId) {
         }).then(response => handleResponse(response));
 
     } catch (error) {
-        const errorMessages = error.response?.data?.message || error;
+        const errorMessages = error.response?.data?.message || error.message;
         $.NotificationApp.send(`下載錯誤:${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
 }
@@ -499,9 +510,9 @@ function formatUrl(url, filter) {
 
 function disableButton(folderId, isSearch) {
     if (folderId < 0 || isSearch) {
-        document.getElementById("add-new-file-button").setAttribute("disabled", "true");
+        document.getElementById("add-new-file-button")?.setAttribute("disabled", "true");
     } else {
-        document.getElementById("add-new-file-button").removeAttribute("disabled");
+        document.getElementById("add-new-file-button")?.removeAttribute("disabled");
     }
 }
 
@@ -525,7 +536,22 @@ function generateActionItems(targetMenuElement, file, isRecycle) {
         {icon: 'mdi-delete', text: '永久刪除', condition: () => isRecycle},
     ];
 
-    const chooseActions = isRecycle ? recycleActions : normalActions;
+    const guestActions = [
+        {icon: 'mdi-link', text: '取得可分享連結', condition: () => !isRecycle},
+        {icon: 'mdi-eye', text: '預覽', condition: (f) => !isRecycle && f.fileType !== 'FOLDER'},
+        {icon: 'mdi-download', text: '下載', condition: () => !isRecycle},
+    ]
+
+    let chooseActions;
+
+    if (isGuest) {
+        chooseActions = guestActions;
+    } else if (isRecycle) {
+        chooseActions = recycleActions;
+    } else {
+        chooseActions = normalActions;
+    }
+
 
     chooseActions.forEach(action => {
         if (action.condition && !action.condition(file)) {
@@ -549,6 +575,11 @@ function generateActionItems(targetMenuElement, file, isRecycle) {
 
         targetMenuElement.appendChild(actionItem);
     });
+}
+
+function formatSpecificPath(folderId) {
+    const stringFolderId = String(folderId);
+    return reservedPath[stringFolderId] || folderId;
 }
 
 export default {fetchFileList, currentFolderId};

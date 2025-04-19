@@ -128,17 +128,17 @@
                                    href="#"
                                    role="button"
                                    aria-haspopup="false"
-                                   aria-expanded="false"> <img src="./assets/images/flags/taiwan.jpg" alt="用戶圖片" class="me-0 me-sm-1" height="12">
-                                    <span class="align-middle d-none d-sm-inline-block">中文</span>
+                                   aria-expanded="false"> <img src="./assets/images/flags/taiwan.jpg" alt="用戶圖片" class="me-0 me-sm-1" height="12"> <span
+                                    class="align-middle d-none d-sm-inline-block">中文</span>
                                     <i class="mdi mdi-chevron-down d-none d-sm-inline-block align-middle"></i> </a>
                                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated topbar-dropdown-menu">
 
                                     <!-- item-->
                                     <a href="javascript:void(0);" class="dropdown-item notify-item disabled"> <img src="./assets/images/flags/us.jpg"
-                                                                                                          alt="用戶圖片"
-                                                                                                          class="me-1"
-                                                                                                          height="12"> <span class="align-middle">英文</span>
-                                    </a>
+                                                                                                                   alt="用戶圖片"
+                                                                                                                   class="me-1"
+                                                                                                                   height="12">
+                                        <span class="align-middle">英文</span> </a>
                                 </div>
                             </li>
 
@@ -186,8 +186,8 @@
                                     <div class="p-2">
                                         <div class="row g-0">
                                             <div class="col">
-                                                <a class="dropdown-icon-item" href="https://github.com/tommot20077/FileManagement"> <img src="./assets/images/brands/github.png" alt="Github">
-                                                    <span>GitHub</span> </a>
+                                                <a class="dropdown-icon-item" href="https://github.com/tommot20077/FileManagement">
+                                                    <img src="./assets/images/brands/github.png" alt="Github"> <span>GitHub</span> </a>
                                             </div>
                                         </div>
                                     </div>
@@ -219,12 +219,12 @@
                                     </div>
 
                                     <!-- item-->
-                                    <a href="javascript:void(0);" class="dropdown-item notify-item disabled"> <i class="mdi mdi-account-circle me-1"></i>
-                                        <span>我的帳戶</span> </a>
+                                    <a href="javascript:void(0);" class="dropdown-item notify-item disabled guest-hide">
+                                        <i class="mdi mdi-account-circle me-1"></i> <span>我的帳戶</span> </a>
 
                                     <!-- item-->
-                                    <a href="javascript:void(0);" class="dropdown-item notify-item disabled"> <i class="mdi mdi-account-edit me-1"></i> <span>設定</span>
-                                    </a>
+                                    <a href="javascript:void(0);" class="dropdown-item notify-item disabled guest-hide">
+                                        <i class="mdi mdi-account-edit me-1"></i> <span>設定</span> </a>
 
                                     <!-- item
                                     <a href="javascript:void(0);" class="dropdown-item notify-item"> <i class="mdi mdi-lifebuoy me-1"></i> <span>支援</span>
@@ -235,11 +235,13 @@
                                         <span>鎖定螢幕</span> </a>
 -->
                                     <!-- item-->
-                                    <a href="javascript:void(0);" id='logoutBtn' class="dropdown-item notify-item"> <i class="mdi mdi-logout me-1"></i>
-                                        <span>登出</span> </a>
+                                    <a href="javascript:void(0);" id='logoutBtn' class="dropdown-item notify-item guest-hide">
+                                        <i class="mdi mdi-logout me-1"></i> <span>登出</span> </a>
+
+                                    <a href="/login" id='loginBtn' class="dropdown-item notify-item guest-show"> <i class="mdi mdi-login me-1"></i>
+                                        <span>登入</span> </a>
                                 </div>
                             </li>
-
                         </ul>
                         <button class="button-menu-mobile open-left">
                             <i class="mdi mdi-menu"></i>
@@ -274,7 +276,7 @@
 
                                             <div class="btn-group d-block mb-2">
                                                 <button type="button"
-                                                        class="btn btn-success dropdown-toggle w-100"
+                                                        class="btn btn-success dropdown-toggle w-100 guest-disabled"
                                                         data-bs-toggle="dropdown"
                                                         aria-haspopup="true"
                                                         aria-expanded="false"
@@ -311,7 +313,7 @@
                                                         </div>
                                                         <div class="justify-content-end row">
                                                             <div class="col-12">
-                                                                <button type="button" class="btn btn-info" id="addNewFolder">新增
+                                                                <button type="submit" class="btn btn-info" id="addNewFolder">新增
                                                                 </button>
                                                                 <button type="button" class="btn btn-secondary" id="cancelAddNewFolder">取消
                                                                 </button>
@@ -349,7 +351,7 @@
                                                                 <div class="modal-footer">
                                                                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消
                                                                     </button>
-                                                                    <button type="button" class="btn btn-primary" id="addNewOnlineDocument">建立
+                                                                    <button type="submit" class="btn btn-primary" id="addNewOnlineDocument">建立
                                                                     </button>
                                                                 </div>
                                                             </form>
@@ -434,7 +436,7 @@
 
                                                         <div class="justify-content-end row">
                                                             <div class="col-12">
-                                                                <button type="button" class="btn btn-primary" id="saveRenameEditFile">儲存
+                                                                <button type="submit" class="btn btn-primary" id="saveRenameEditFile">儲存
                                                                 </button>
                                                                 <button type="button" class="btn btn-secondary" id="cancelRenameEditFile">取消
                                                                 </button>
@@ -503,23 +505,23 @@
                                             <div class="email-menu-list mt-3">
                                                 <a href="javascript:void(0);"
                                                    id='index-btn'
-                                                   class="list-group-item border-0"><i class="mdi mdi-folder-outline font-18 align-middle me-2"></i>我的 文件</a>
+                                                   class="list-group-item border-0 guest-disabled"><i class="mdi mdi-folder-outline font-18 align-middle me-2"></i>我的 文件</a>
                                                 <a href="javascript:void(0);"
                                                    class="list-group-item border-0 disabled"><i class="mdi mdi-google-drive font-18 align-middle me-2"></i>Google Drive</a>
                                                 <a href="javascript:void(0);"
                                                    class="list-group-item border-0 disabled"><i class="mdi mdi-dropbox font-18 align-middle me-2"></i>Dropbox</a>
                                                 <a href="javascript:void(0);"
                                                    id='shared-btn'
-                                                   class="list-group-item border-0"><i class="mdi mdi-share-variant font-18 align-middle me-2"></i>與 我分享</a>
+                                                   class="list-group-item border-0 guest-disabled"><i class="mdi mdi-share-variant font-18 align-middle me-2"></i>與 我分享</a>
                                                 <a href="javascript:void(0);"
                                                    id='stars-btn'
-                                                   class="list-group-item border-0"><i class="mdi mdi-star-outline font-18 align-middle me-2"></i>加星標</a> <a
-                                                href="javascript:void(0);"
-                                                id='recently-btn'
-                                                class="list-group-item border-0"><i class="mdi mdi-clock-outline font-18 align-middle me-2"></i>最近</a>
+                                                   class="list-group-item border-0 guest-disabled"><i class="mdi mdi-star-outline font-18 align-middle me-2"></i>加星標</a>
+                                                <a href="javascript:void(0);"
+                                                   id='recently-btn'
+                                                   class="list-group-item border-0 guest-disabled"><i class="mdi mdi-clock-outline font-18 align-middle me-2"></i>最近</a>
                                                 <a href="javascript:void(0);"
                                                    id='recycle-btn'
-                                                   class="list-group-item border-0"><i class="mdi mdi-delete font-18 align-middle me-2"></i>已刪除 文件</a>
+                                                   class="list-group-item border-0 guest-disabled"><i class="mdi mdi-delete font-18 align-middle me-2"></i>已刪除 文件</a>
                                             </div>
 
                                             <div class="mt-5" id="user-storage-status">
@@ -540,112 +542,110 @@
 
                                             <div class="d-lg-flex justify-content-between align-items-center">
                                                 <div class="app-search">
-                                                    <form>
-                                                        <div class="input-group mb-2">
-                                                            <div class="d-flex align-items-center">
+
+                                                    <div class="input-group mb-2">
+                                                        <div >
+                                                            <form class="d-flex align-items-center">
                                                                 <input type="text"
                                                                        class="form-control dropdown-toggle me-2"
                                                                        placeholder="搜尋..."
                                                                        id="base-file-search-keyword">
                                                                 <span class="mdi mdi-magnify app-search search-icon me-2"></span>
+
                                                                 <div class="btn-group">
-                                                                    <button type="button" class="btn btn-info" style="width: 100px" id='base-search-btn'>搜尋
+                                                                    <button type="submit"
+                                                                            class="btn btn-info guest-disabled"
+                                                                            style="width: 100px"
+                                                                            id='base-search-btn'>搜尋
                                                                     </button>
                                                                     <button type="button"
-                                                                            class="btn btn-info dropdown-toggle-split dropdown-toggle"
+                                                                            class="btn btn-info dropdown-toggle-split dropdown-toggle guest-disabled"
                                                                             data-bs-toggle="offcanvas"
                                                                             data-bs-target="#advance-search"
                                                                             aria-controls="offcanvasTop"
                                                                             aria-haspopup="true"
                                                                             aria-expanded="false"></button>
-                                                                    <div class="offcanvas offcanvas-start" tabindex="-1" id="advance-search">
-                                                                        <div class="offcanvas-header">
-                                                                            <h5 id="offcanvasTopLabel">進階搜尋</h5>
-                                                                            <button type="button"
-                                                                                    id='close-advance-search-btn'
-                                                                                    class="btn-close text-reset"
-                                                                                    data-bs-dismiss="offcanvas"
-                                                                                    aria-label="Close"></button>
+                                                                </div>
+                                                            </form>
+                                                            <div class="offcanvas offcanvas-start" tabindex="-1" id="advance-search">
+                                                                <div class="offcanvas-header">
+                                                                    <h5 id="offcanvasTopLabel">進階搜尋</h5>
+                                                                    <button type="button"
+                                                                            id='close-advance-search-btn'
+                                                                            class="btn-close text-reset"
+                                                                            data-bs-dismiss="offcanvas"
+                                                                            aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="offcanvas-body">
+                                                                    <form class="form-horizontal">
+                                                                        <div class="row mb-3">
+                                                                            <label for="advance-keyword" class="col-3 col-form-label">關鍵字</label>
+                                                                            <div class="col-9">
+                                                                                <input type="text"
+                                                                                       class="form-control"
+                                                                                       id="advance-keyword"
+                                                                                       placeholder="關鍵字...">
+                                                                            </div>
                                                                         </div>
-                                                                        <div class="offcanvas-body">
-                                                                            <form class="form-horizontal">
-                                                                                <div class="row mb-3">
-                                                                                    <label for="advance-keyword" class="col-3 col-form-label">關鍵字</label>
-                                                                                    <div class="col-9">
-                                                                                        <input type="text"
-                                                                                               class="form-control"
-                                                                                               id="advance-keyword"
-                                                                                               placeholder="關鍵字...">
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="row mb-3">
-                                                                                    <label for="advance-folder" class="col-3 col-form-label">指定資料夾</label>
-                                                                                    <div class="col-6">
-                                                                                        <input type="text"
-                                                                                               class="form-control"
-                                                                                               id="advance-folder"
-                                                                                               readonly
-                                                                                               disabled>
-                                                                                    </div>
-                                                                                    <div class="col-3">
-                                                                                        <button type="button" class="btn btn-info" id='choose-folder-btn'>選擇
-                                                                                        </button>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="row mb-3">
-                                                                                    <label for="choose-type" class="col-3 col-form-label">指定類型</label>
-                                                                                    <div class="col-9">
-                                                                                        <select id='choose-type'
-                                                                                                class="select2 form-control select2-multiple"
-                                                                                                data-toggle="select2"
-                                                                                                multiple="multiple"
-                                                                                                data-placeholder="">
-                                                                                            <option value="IMAGE">照片</option>
-                                                                                            <option value="VIDEO">影片</option>
-                                                                                            <option value="MUSIC">音樂</option>
-                                                                                            <option value="DOCUMENT">文件</option>
-                                                                                            <option value="ZIP">壓縮檔</option>
-                                                                                            <option value="ONLINE_DOCUMENT">線上文件</option>
-                                                                                            <option value="FOLDER">資料夾</option>
-                                                                                            <option value="OTHER">其他</option>
-
-                                                                                        </select>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="row mb-3" id='calendar-range'></div>
-
-                                                                                <div class="row mb-3">
-                                                                                    <label class="col-3 col-form-label form-check-label">包含刪除</label>
-                                                                                    <div class="col-9 col-form-label form-check-label">
-                                                                                        <input type="checkbox" id="include-delete" data-switch="bool"/> <label
-                                                                                        for='include-delete'
-                                                                                        data-on-label="Yes"
-                                                                                        data-off-label="No"></label>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="row mb-3">
-                                                                                    <label class="col-3 col-form-label form-check-label">包含分享</label>
-                                                                                    <div class="col-9 col-form-label form-check-label">
-                                                                                        <input type="checkbox" id="include-share" data-switch="bool"/> <label
-                                                                                        for='include-share'
-                                                                                        data-on-label="Yes"
-                                                                                        data-off-label="No"></label>
-                                                                                    </div>
-                                                                                </div>
-
-                                                                                <div class="col mb-3">
-                                                                                    <button type="button" class="btn btn-info" id="advance-search-btn">搜尋
-                                                                                    </button>
-                                                                                    <button id='advance-reset-btn' type="reset" class="btn btn-secondary">重設
-                                                                                    </button>
-                                                                                </div>
-                                                                            </form>
+                                                                        <div class="row mb-3">
+                                                                            <label for="advance-folder" class="col-3 col-form-label">指定資料夾</label>
+                                                                            <div class="col-6">
+                                                                                <input type="text" class="form-control" id="advance-folder" readonly disabled>
+                                                                            </div>
+                                                                            <div class="col-3">
+                                                                                <button type="button" class="btn btn-info" id='choose-folder-btn'>選擇
+                                                                                </button>
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
+                                                                        <div class="row mb-3">
+                                                                            <label for="choose-type" class="col-3 col-form-label">指定類型</label>
+                                                                            <div class="col-9">
+                                                                                <select id='choose-type'
+                                                                                        class="select2 form-control select2-multiple"
+                                                                                        data-toggle="select2"
+                                                                                        multiple="multiple"
+                                                                                        data-placeholder="">
+                                                                                    <option value="IMAGE">照片</option>
+                                                                                    <option value="VIDEO">影片</option>
+                                                                                    <option value="MUSIC">音樂</option>
+                                                                                    <option value="DOCUMENT">文件</option>
+                                                                                    <option value="ZIP">壓縮檔</option>
+                                                                                    <option value="ONLINE_DOCUMENT">線上文件</option>
+                                                                                    <option value="FOLDER">資料夾</option>
+                                                                                    <option value="OTHER">其他</option>
+
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row mb-3" id='calendar-range'></div>
+
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-3 col-form-label form-check-label">包含刪除</label>
+                                                                            <div class="col-9 col-form-label form-check-label">
+                                                                                <input type="checkbox" id="include-delete" data-switch="bool"/>
+                                                                                <label for='include-delete' data-on-label="Yes" data-off-label="No"></label>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row mb-3">
+                                                                            <label class="col-3 col-form-label form-check-label">包含分享</label>
+                                                                            <div class="col-9 col-form-label form-check-label">
+                                                                                <input type="checkbox" id="include-share" data-switch="bool"/>
+                                                                                <label for='include-share' data-on-label="Yes" data-off-label="No"></label>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="col mb-3">
+                                                                            <button type="submit" class="btn btn-info" id="advance-search-btn">搜尋
+                                                                            </button>
+                                                                            <button id='advance-reset-btn' type="reset" class="btn btn-secondary">重設
+                                                                            </button>
+                                                                        </div>
+                                                                    </form>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </form>
+                                                    </div>
+
                                                 </div>
                                                 <div>
                                                     <button type="submit" class="btn btn-sm btn-light">
@@ -661,13 +661,14 @@
                                             <div class="mt-3">
                                                 <h5 class="mb-3">檔案列表</h5>
                                                 <div class="table-responsive" style="position: relative;">
-                                                    <div id="contextDropdownContainer" class="btn-group dropdown" style="position: absolute; display: none; z-index: 50;">
+                                                    <div id="contextDropdownContainer"
+                                                         class="btn-group dropdown"
+                                                         style="position: absolute; display: none; z-index: 50;">
                                                         <a id="contextDropdownToggle"
                                                            class="dropdown-toggle btn btn-light btn-xs"
                                                            style='visibility: hidden;'
                                                            data-bs-toggle="dropdown"
-                                                           aria-expanded="false">
-                                                        </a>
+                                                           aria-expanded="false"> </a>
                                                         <div id="contextDropdownMenu" class="dropdown-menu dropdown-menu-end"></div>
                                                     </div>
                                                     <table class="table table-centered table-hover table-nowrap mb-0">
@@ -684,7 +685,7 @@
                                                         <tbody></tbody>
                                                     </table>
                                                     <nav>
-                                                        <ul class="pagination pagination-rounded mb-0 justify-content-center"></ul>
+                                                        <ul class="pagination pagination-rounded mb-0 justify-content-center mt-3"></ul>
                                                     </nav>
                                                 </div>
 

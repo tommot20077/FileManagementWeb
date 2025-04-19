@@ -1,7 +1,7 @@
-import {buttonLoading} from "./component.js";
+import {buttonLoading, setCookie} from "./component.js";
 import webConnector from "./web-connector.js";
 
-document.getElementById("sign-in-form").addEventListener("submit", function (event) {
+document.getElementById("sign-in-form")?.addEventListener("submit", function (event) {
     event.preventDefault();
 
     const button = document.getElementById("sign-in-button");
@@ -14,8 +14,6 @@ document.getElementById("sign-in-form").addEventListener("submit", function (eve
     }
 
     buttonLoading(button, true, "登入中...");
-    let csrfToken = null;
-    let headerName = null;
     const data = {
         username: username.value, password: password.value
     }
@@ -26,6 +24,7 @@ document.getElementById("sign-in-form").addEventListener("submit", function (eve
             $.NotificationApp.send("登入成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
             document.getElementById("success-header-modal-button").click();
             buttonLoading(button, false, "登入");
+            setCookie('hasGuestCheck', 'true', 1);
         } else {
             buttonLoading(button, false, "登入");
             $.NotificationApp.send(`登入失敗: ${response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
@@ -37,9 +36,14 @@ document.getElementById("sign-in-form").addEventListener("submit", function (eve
     });
 });
 
-document.getElementById("back-index").addEventListener("click", function (event) {
+document.getElementById("back-index")?.addEventListener("click", function (event) {
     document.getElementById("user_token").innerText = "";
     event.preventDefault();
+    window.location.href = "/";
+});
+
+document.getElementById("guest-sign-in-button")?.addEventListener("click", function (event) {
+    setCookie('hasGuestCheck', 'true', 1);
     window.location.href = "/";
 });
 

@@ -5,7 +5,7 @@ let mail = null
 let password = null
 let passwordConfirm = null
 let code = null
-document.getElementById('reset-password-btn').addEventListener('click', function (event) {
+document.getElementById('reset-password-btn')?.addEventListener('click', function (event) {
     const form = event.target.closest('form');
     if (!form.checkValidity()) {
         event.preventDefault();
@@ -31,10 +31,10 @@ document.getElementById('reset-password-btn').addEventListener('click', function
         buttonLoading(this, false, "重置密碼");
     });
 });
-document.getElementById('code').addEventListener('input', function (event) {
+document.getElementById('code')?.addEventListener('input', function (event) {
     this.value = this.value.replace(/\D/g, '').slice(0, 6);
 });
-document.getElementById('reset-password').addEventListener('click', function (event) {
+document.getElementById('reset-password')?.addEventListener('click', function (event) {
     event.preventDefault();
     if (document.getElementById('code').value === null || document.getElementById('code')
                                                                   .value

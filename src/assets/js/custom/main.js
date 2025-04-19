@@ -11,9 +11,10 @@ import fetchFileList from "./fetch-file-list.js";
 import {logout} from "./logout-main.js";
 import {openMoveFileModal} from "./folder-tree.js";
 import moment from "moment";
-import {buttonLoading} from "./component.js";
+import {buttonLoading, checkLoginStatus} from "./component.js";
 
 document.addEventListener('DOMContentLoaded', () => {
+    checkLoginStatus();
 
     const urlParams = new URLSearchParams(window.location.search);
 
@@ -128,7 +129,8 @@ function htmlStyle() {
         await openMoveFileModal(null, document.getElementById("advance-folder"), true);
     });
 
-    document.getElementById("base-search-btn").addEventListener("click", async function () {
+    document.getElementById("base-search-btn").addEventListener("click", async function (e) {
+        e.preventDefault()
         const btn = document.getElementById("base-search-btn");
         const keyword = document.getElementById("base-file-search-keyword").value;
         if (!keyword || keyword.trim().length < 2) {
@@ -141,7 +143,8 @@ function htmlStyle() {
         });
     });
 
-    document.getElementById("advance-search-btn").addEventListener("click", async function () {
+    document.getElementById("advance-search-btn").addEventListener("click", async function (e) {
+        e.preventDefault()
         const btn = document.getElementById("advance-search-btn");
 
         const keyword = document.getElementById("advance-keyword").value;

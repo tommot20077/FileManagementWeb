@@ -1,7 +1,7 @@
 import {buttonLoading} from "./component.js";
 import webConnector from "./web-connector.js";
 
-document.getElementById("sign-up-form").addEventListener("submit", function(event) {
+document.getElementById("sign-up-form")?.addEventListener("submit", function(event) {
     if (!this.checkValidity()) {
         event.preventDefault();
         event.stopPropagation();
@@ -59,7 +59,7 @@ document.getElementById("sign-up-form").addEventListener("submit", function(even
 
 });
 
-document.getElementById("back-login").addEventListener("click", function(e) {
+document.getElementById("back-login")?.addEventListener("click", function(e) {
     e.preventDefault();
     window.location.href = "/login";
 });

@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 處理上傳按鈕點擊事件
-document.getElementById('submitUpload').addEventListener('click', () => {
+document.getElementById('submitUpload')?.addEventListener('click', () => {
     removeDropzoneHandleFile(myDropzone);
     const files = myDropzone.files;
     if (myDropzone && files.length === 0) {
@@ -154,12 +154,12 @@ document.getElementById('submitUpload').addEventListener('click', () => {
     });
 });
 
-document.getElementById("submitToken").addEventListener("click", (e) => {
+document.getElementById("submitToken")?.addEventListener("click", (e) => {
     e.preventDefault()
     jwtToken = document.getElementById("jwtToken").value;
 });
 
-document.getElementById('submitUploadWs').addEventListener('click', () => {
+document.getElementById('submitUploadWs')?.addEventListener('click', () => {
     if (!jwtToken) {
         $.NotificationApp.send("請輸入 JWT 憑證", "", "bottom-right", "rgba(0,0,0,0.2)", "warning");
         document.getElementById("check-ws-upload-modal-button").click();
@@ -298,7 +298,7 @@ function removeDropzoneHandleFile(myDropzone) {
 
 
 // 顯示模態框
-document.getElementById('upload-new-file').addEventListener('click', (event) => {
+document.getElementById('upload-new-file')?.addEventListener('click', (event) => {
     event.preventDefault();
     document.getElementById('uploadModal').classList.remove('hidden'); // 顯示模態框
     document.body.classList.add('no-scroll');
@@ -306,8 +306,8 @@ document.getElementById('upload-new-file').addEventListener('click', (event) => 
 });
 
 // 隱藏模態框
-document.getElementById('closeModal').addEventListener('click', () => {
-    document.getElementById('uploadModal').classList.add('hidden'); // 隱藏模態框
+document.getElementById('closeModal')?.addEventListener('click', () => {
+    document.getElementById('uploadModal')?.classList.add('hidden'); // 隱藏模態框
     if (myDropzone) {
         myDropzone.removeAllFiles(true); // 清除已選文件
     }

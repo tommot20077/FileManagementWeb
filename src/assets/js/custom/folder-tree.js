@@ -1,6 +1,7 @@
 import webConnector from "./web-connector.js";
 import {currentFolderId, fetchFileList} from "./fetch-file-list.js";
 import {updatePaginationControls} from "./tool.js";
+import {buttonLoading} from "./component.js";
 
 class FolderTree {
     constructor(file, targetElement = null, isSearch = false) {
@@ -206,21 +207,23 @@ class FolderTree {
         const resetButton = document.getElementById('resetButton');
 
         moveButton?.addEventListener('click', async () => {
-            const FolderId = this.selectedFolderId === 0 ? null : this.selectedFolderId;
-            const data = {
-                fileId: this.file.id,
-                filename: this.file.filename,
-                parentFolderId: FolderId,
-                shareUserIds: this.file.shareUsers
-            }
-            let url;
-            if (this.file.fileType === 'FOLDER') {
-                url = '/folders';
-            } else {
-                url = '/files';
-            }
-
             try {
+                buttonLoading(moveButton, true, "移動中...");
+                const FolderId = this.selectedFolderId === 0 ? null : this.selectedFolderId;
+                const data = {
+                    fileId: this.file.id,
+                    filename: this.file.filename,
+                    parentFolderId: FolderId,
+                    shareUserIds: this.file.shareUsers
+                }
+                let url;
+                if (this.file.fileType === 'FOLDER') {
+                    url = '/folders';
+                } else {
+                    url = '/files';
+                }
+
+
                 const response = await webConnector.put(`${url}`, data)
                 if (response.status === 200) {
                     closeMoveFileModal();
@@ -228,6 +231,8 @@ class FolderTree {
             } catch (error) {
                 const errorMessages = error.response?.data?.message || error;
                 $.NotificationApp.send(`移動失敗:${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+            } finally {
+                buttonLoading(moveButton, false, "移動");
             }
         });
         chooseButton?.addEventListener('click', async () => {
@@ -249,11 +254,11 @@ class FolderTree {
 
 export function openMoveFileModal(file = null, targetElement = null, isSearch = false) {
     new FolderTree(file, targetElement, isSearch);
-    document.getElementById('moveFileModal').classList.remove("hidden");
+    document.getElementById('moveFileModal')?.classList.remove("hidden");
 }
 
 function closeMoveFileModal(reset = true) {
-    document.getElementById('moveFileModal').classList.add("hidden");
+    document.getElementById('moveFileModal')?.classList.add("hidden");
     document.getElementById('moveFileContainer').innerHTML = '';
     if (reset) {
         fetchFileList(currentFolderId).then(() => {

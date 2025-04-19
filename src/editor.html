@@ -222,11 +222,11 @@
                                     </div>
 
                                     <!-- item-->
-                                    <a href="javascript:void(0);" class="dropdown-item notify-item disabled"> <i class="mdi mdi-account-circle me-1"></i>
+                                    <a href="javascript:void(0);" class="dropdown-item notify-item disabled guest-hide"> <i class="mdi mdi-account-circle me-1"></i>
                                         <span>我的帳戶</span> </a>
 
                                     <!-- item-->
-                                    <a href="javascript:void(0);" class="dropdown-item notify-item disabled"> <i class="mdi mdi-account-edit me-1"></i> <span>設定</span>
+                                    <a href="javascript:void(0);" class="dropdown-item notify-item disabled guest-hide"> <i class="mdi mdi-account-edit me-1"></i> <span>設定</span>
                                     </a>
 
                                     <!-- item
@@ -238,8 +238,10 @@
                                         <span>鎖定螢幕</span> </a>
 -->
                                     <!-- item-->
-                                    <a href="javascript:void(0);" id='logoutBtn' class="dropdown-item notify-item"> <i class="mdi mdi-logout me-1"></i>
+                                    <a href="javascript:void(0);" id='logoutBtn' class="dropdown-item notify-item guest-hide"> <i class="mdi mdi-logout me-1"></i>
                                         <span>登出</span> </a>
+                                    <a href="/login" id='loginBtn' class="dropdown-item notify-item guest-show"> <i class="mdi mdi-login me-1"></i>
+                                        <span>登入</span> </a>
                                 </div>
                             </li>
 
@@ -260,9 +262,9 @@
                                     <div class="page-title-right">
                                         <div class="dropdown">
                                             <div class="btn-group">
-                                                <button id='update-btn' type="button" class="btn btn-info">更新</button>
+                                                <button id='update-btn' type="button" class="btn btn-info guest-disabled">更新</button>
                                                 <button type="button"
-                                                        class="btn btn-info dropdown-toggle dropdown-toggle-split"
+                                                        class="btn btn-info dropdown-toggle dropdown-toggle-split guest-disabled"
                                                         data-bs-toggle="dropdown"
                                                         aria-haspopup="true"
                                                         aria-expanded="false"></button>
@@ -295,12 +297,11 @@
                                                                             <input class="form-control" type="text" id="NewHistoryNote" placeholder="關於此版本的備註...">
                                                                         </div>
                                                                     </div>
+                                                                    <div class="modal-footer">
+                                                                        <button class="btn btn-primary" type='submit' id='checkBuildHistoryButton'>確認</button>
+                                                                        <button class="btn btn-secondary" id='cancelBuildHistoryButton' data-bs-dismiss="modal">取消</button>
+                                                                    </div>
                                                                 </form>
-                                                                <div class="modal-footer">
-                                                                    <button class="btn btn-primary" id='checkBuildHistoryBottom'>確認
-                                                                    </button>
-                                                                    <button class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                                                                </div>
                                                             </div>
                                                         </div><!-- /.modal-content -->
                                                     </div><!-- /.modal-dialog -->

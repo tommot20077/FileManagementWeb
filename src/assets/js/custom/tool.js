@@ -112,4 +112,32 @@ function convertToISOFormat(dateStr) {
     return date.toISOString().split("T")[0] + "T00:00:00";
 }
 
+export async function copyToClipboard(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        $.NotificationApp.send("複製連接成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
+    } catch (error) {
+        console.error('複製失敗:', error);
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                $.NotificationApp.send("複製連接成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
+            } else {
+                $.NotificationApp.send("複製失敗", "請手動複製鏈接", "bottom-right", "rgba(0,0,0,0.2)", "error");
+            }
+        } catch (err) {
+            console.error('備用方法複製失敗:', err);
+            $.NotificationApp.send("複製失敗", "請手動複製鏈接", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        } finally {
+            document.body.removeChild(textarea);
+        }
+    }
+}
+
 export {formatFileSize, updatePaginationControls, convertToISOFormat};

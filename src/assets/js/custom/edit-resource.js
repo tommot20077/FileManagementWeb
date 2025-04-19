@@ -2,11 +2,11 @@ import webConnector from "./web-connector.js";
 import {currentFolderId, fetchFileList} from "./fetch-file-list.js";
 import {buttonLoading} from "./component.js";
 
-document.getElementById("add-new-folder").addEventListener('click', () => {
-    document.getElementById("addFolderModal").classList.remove("hidden");
+document.getElementById("add-new-folder")?.addEventListener('click', () => {
+    document.getElementById("addFolderModal")?.classList.remove("hidden");
 });
 
-document.getElementById("addNewFolder").addEventListener('click', async () => {
+document.getElementById("addNewFolder")?.addEventListener('click', async () => {
         const btn = document.getElementById("addNewFolder");
         const folderName = document.getElementById('newFolderName').value.trim();
         const errorContainer = document.getElementById('newFolderNameError');
@@ -26,7 +26,7 @@ document.getElementById("addNewFolder").addEventListener('click', async () => {
 
             if (response.data.status === 200) {
                 document.getElementById('newFolderName').value = '';
-                document.getElementById("addFolderModal").classList.add("hidden");
+                document.getElementById("addFolderModal")?.classList.add("hidden");
                 fetchFileList(currentFolderId).then(() => {
                     buttonLoading(btn, false, '新增');
                 });
@@ -46,9 +46,9 @@ document.getElementById("addNewFolder").addEventListener('click', async () => {
     }
 );
 
-document.getElementById("cancelAddNewFolder").addEventListener('click', () => {
+document.getElementById("cancelAddNewFolder")?.addEventListener('click', () => {
     document.getElementById('newFolderName').value = '';
-    document.getElementById("addFolderModal").classList.add("hidden");
+    document.getElementById("addFolderModal")?.classList.add("hidden");
     document.getElementById('newFolderNameError').textContent = '';
     buttonLoading(document.getElementById("addNewFolder"), false, '新增');
 });
@@ -224,9 +224,9 @@ async function saveEditFile(isEditShare) {
             $.NotificationApp.send("檔案編輯成功", "", "bottom-right", "rgba(0,0,0,0.2)", "success");
             cleanFileInformation();
             if (isEditShare) {
-                document.getElementById("editShareFileModal").classList.add("hidden");
+                document.getElementById("editShareFileModal")?.classList.add("hidden");
             } else {
-                document.getElementById("renameFileModal").classList.add("hidden");
+                document.getElementById("renameFileModal")?.classList.add("hidden");
             }
 
             await fetchFileList(currentFolderId);
@@ -242,13 +242,13 @@ async function saveEditFile(isEditShare) {
     }
 }
 
-document.getElementById("saveRenameEditFile").addEventListener('click', () => saveEditFile(false));
-document.getElementById("saveShareEditFile").addEventListener('click', () => saveEditFile(true));
+document.getElementById("saveRenameEditFile")?.addEventListener('click', () => saveEditFile(false));
+document.getElementById("saveShareEditFile")?.addEventListener('click', () => saveEditFile(true));
 
-document.getElementById("cancelRenameEditFile").addEventListener('click', (e) => {
+document.getElementById("cancelRenameEditFile")?.addEventListener('click', (e) => {
     cleanEditFile(e, false);
 });
-document.getElementById("cancelShareEditFile").addEventListener('click', (e) => {
+document.getElementById("cancelShareEditFile")?.addEventListener('click', (e) => {
     cleanEditFile(e, true);
 })
 
@@ -256,16 +256,16 @@ function cleanEditFile(e, isEditShare) {
     e.preventDefault();
     cleanFileInformation();
     if (isEditShare) {
-        document.getElementById("editShareFileModal").classList.add("hidden");
+        document.getElementById("editShareFileModal")?.classList.add("hidden");
         buttonLoading(document.getElementById("saveShareEditFile"), false, '儲存');
     } else {
-        document.getElementById("renameFileModal").classList.add("hidden");
+        document.getElementById("renameFileModal")?.classList.add("hidden");
         buttonLoading(document.getElementById("saveRenameEditFile"), false, '儲存');
     }
 }
 
 
-document.getElementById("share-type").addEventListener('change', (e) => {
+document.getElementById("share-type")?.addEventListener('change', (e) => {
     const shareUsers = $('#shareUsers');
     if (e.target.value === 'NONE') {
         shareUsers.prop('disabled', true);
@@ -275,7 +275,7 @@ document.getElementById("share-type").addEventListener('change', (e) => {
 })
 
 
-document.getElementById("addNewOnlineDocument").addEventListener('click', () => {
+document.getElementById("addNewOnlineDocument")?.addEventListener('click', () => {
     let name = document.getElementById('newOnlineDocumentName').value.trim();
     if (!name) {
         $.NotificationApp.send("檔案名稱不能為空", "", "bottom-right", "rgba(0,0,0,0.2)", "warning");

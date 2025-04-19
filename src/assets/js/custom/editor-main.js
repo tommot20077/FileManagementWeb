@@ -1,8 +1,9 @@
 import hljs from 'highlight.js';
 import Quill, {Delta} from "quill";
 import webConnector from "./web-connector.js";
-import {buttonLoading} from "./component.js";
+import {buttonLoading, hideGuest} from "./component.js";
 import {logout} from "./logout-main.js";
+import {getUserInfo, isGuest} from "./user-info.js";
 
 let fileId = null;
 let filename = null;
@@ -25,6 +26,7 @@ let quill = new Quill("#editor", {
     }
 });
 document.addEventListener("DOMContentLoaded", function () {
+    getUserInfo();
     if (window.name) {
         let file = JSON.parse(window.name);
         fileId = file.id;
@@ -168,7 +170,7 @@ async function getUserHistoryVersion() {
             historyList.appendChild(card);
         }))
 
-        const revertButtons = document.getElementById("userHistoryList").querySelectorAll('.btn.btn-info.btn-sm');
+        const revertButtons = document.getElementById("userHistoryList")?.querySelectorAll('.btn.btn-info.btn-sm');
         revertButtons.forEach(button => {
             button.addEventListener('click', function () {
                 const id = this.getAttribute('data-id');
@@ -220,7 +222,12 @@ async function getUserHistoryVersion() {
         })
     });
 
-    document.getElementById("checkBuildHistoryBottom").addEventListener("click", function () {
+    document.getElementById("cancelBuildHistoryButton").addEventListener("click", function (e) {
+        e.preventDefault();
+    })
+
+    document.getElementById("checkBuildHistoryButton").addEventListener("click", function (e) {
+        e.preventDefault();
         let note = document.getElementById("NewHistoryNote").value;
         buttonLoading(this, true, "建立中...");
         const data = {

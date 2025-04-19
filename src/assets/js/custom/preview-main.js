@@ -18,17 +18,18 @@ async function getFileMetadata(fileId) {
     try {
         const response = await webConnector.get(`${config.backendUrl}/web/v1/files/${fileId}/info`, {xsrfCookieName: "useless"});
 
-        if (response.status !== 200) {
-            new Error("無法獲取檔案資訊");
-        }
-
         return {
+            isSuccess: true,
             type: response.data.data["X-File-Content-Type"] || "",
             size: response.data.data["X-File-Size"] || 0
         };
     } catch (error) {
-        console.error("獲取檔案資訊錯誤:", error);
-        return null;
+        const errorMessage = error.response?.data?.message || error;
+        console.error("獲取檔案資訊錯誤: ", errorMessage);
+        return {
+            isSuccess: false,
+            message: errorMessage
+        }
     }
 }
 
@@ -37,8 +38,8 @@ export async function loadFilePreview(fileId) {
     const progressBar = document.getElementById("loading-progress-bar");
 
     const metadata = await getFileMetadata(fileId);
-    if (!metadata) {
-        container.innerHTML = "<p>無法獲取檔案資訊</p>";
+    if (!metadata.isSuccess) {
+        container.innerHTML = `<p>無法獲取檔案資訊: ${metadata.message}</p>`;
         return;
     }
 

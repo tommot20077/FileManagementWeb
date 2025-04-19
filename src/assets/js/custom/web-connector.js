@@ -1,5 +1,6 @@
 import axios from "axios";
 import Config from "../../../../config/config.js";
+
 async function fetchCsrfToken() {
     try {
         const response = await axios.get(`${Config.backendUrl}/api/v1/guest/csrf/token`, { withCredentials: true });
@@ -25,6 +26,7 @@ const webConnector = axios.create({
 webConnector.interceptors.response.use(
     (response) => response,
     (error) => {
+        console.error(error.response?.data?.message || error);
         if (error.response) {
             const { status } = error.response.data;
             if (status === 1124 || status === 1108) {
