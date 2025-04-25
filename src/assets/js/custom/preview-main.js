@@ -12,7 +12,10 @@ import * as docxPreview from 'docx-preview';
 import * as XLSX from "xlsx";
 import canvasDatagrid from 'canvas-datagrid';
 
-let fileId;
+let currentFileId
+let folderId
+let fileType
+let container
 
 async function getFileMetadata(fileId) {
     try {
@@ -20,8 +23,7 @@ async function getFileMetadata(fileId) {
 
         return {
             isSuccess: true,
-            type: response.data.data["X-File-Content-Type"] || "",
-            size: response.data.data["X-File-Size"] || 0
+            mimeType: response.data.data["X-File-Content-Type"] || ""
         };
     } catch (error) {
         const errorMessage = error.response?.data?.message || error;
@@ -33,35 +35,69 @@ async function getFileMetadata(fileId) {
     }
 }
 
+async function getFolderMetadata(folderId) {
+    try {
+        if (!config.previewMutiFile) {
+            return {
+                isSuccess: true,
+                files: [],
+            };
+        }
+
+        const response = await webConnector.get(`${config.backendUrl}/web/v1/files/search?folder=${folderId}&type=${fileType}`, {xsrfCookieName: "useless"});
+
+        return {
+            isSuccess: true,
+            files: response.data.data.files.data || [],
+        };
+    } catch (error) {
+        const errorMessage = error.response?.data?.message || error;
+        console.error("獲取資料夾資訊錯誤: ", errorMessage);
+        return {
+            isSuccess: false,
+            message: errorMessage
+        }
+    }
+}
+
 export async function loadFilePreview(fileId) {
-    const container = document.getElementById("previewContainer");
+    container = document.getElementById("previewContainer");
     const progressBar = document.getElementById("loading-progress-bar");
 
-    const metadata = await getFileMetadata(fileId);
-    if (!metadata.isSuccess) {
-        container.innerHTML = `<p>無法獲取檔案資訊: ${metadata.message}</p>`;
+    const [fileMetadata, folderMetadata] = await Promise.all([
+        getFileMetadata(fileId),
+        getFolderMetadata(folderId)
+    ]);
+
+
+    if (!fileMetadata.isSuccess || !folderMetadata.isSuccess) {
+        container.innerHTML = `<p>無法獲取檔案資訊: ${fileMetadata.message}</p>`;
         return;
     }
 
-    const {type} = metadata;
+    const {mimeType} = fileMetadata;
+    const {files} = folderMetadata;
     const fileUrl = `${config.backendUrl}/web/v1/files/${fileId}?action=preview`;
 
 
     try {
         const needsBlob = supportedTypesForBlob.some(supportedType =>
-            type.startsWith(supportedType) || type.includes(supportedType)
+            mimeType.startsWith(supportedType) || mimeType.includes(supportedType)
         );
 
         if (!needsBlob) {
-            await renderGeneralPreview(null, null, type, container);
+            await renderGeneralPreview(null, null, mimeType);
             return;
         }
 
-        if (type.startsWith("video") || type.startsWith("audio")) {
-            renderVideoPreview(fileUrl, container, type);
+        if (mimeType.startsWith("image")) {
+            renderImagePreview(files);
             return
-        } else if (type.startsWith("image")) {
-            renderImagePreview(fileUrl, container);
+        }
+
+
+        if (mimeType.startsWith("video") || mimeType.startsWith("audio")) {
+            renderVideoPreview(fileUrl, mimeType);
             return
         }
 
@@ -94,37 +130,36 @@ export async function loadFilePreview(fileId) {
         }
         progressBar.style.width = "100%";
 
-        const blob = new Blob(chunks, {type});
+        const blob = new Blob(chunks, {mimeType});
         const url = URL.createObjectURL(blob);
 
-        await renderGeneralPreview(blob, url, type, container);
+        await renderGeneralPreview(blob, url, mimeType);
 
-        const revokeHandler = () => {
+        window.addEventListener('beforeunload', () => {
             URL.revokeObjectURL(url);
-            window.removeEventListener('beforeunload', revokeHandler);
-        };
-        window.addEventListener('beforeunload', revokeHandler);
+        });
     } catch (error) {
         console.error("文件載入錯誤:", error);
         container.innerHTML = "<p>文件載入失敗</p>";
+        $.NotificationApp.send("錯誤", error.message || "無法載入檔案", "bottom-right", "rgba(0,0,0,0.2)", "error");
     }
 }
 
-async function renderGeneralPreview(blob, url, type, container) {
+async function renderGeneralPreview(blob, url, mimeType) {
     container.innerHTML = "";
 
     let element;
-    if (type === "application/pdf" && url) {
-        await renderPDFPreview(url, container);
+    if (mimeType === "application/pdf" && url) {
+        await renderPDFPreview(url);
         return
-    } else if (type.includes("wordprocessingml") && blob) {
-        await renderWordPreview(blob, container);
+    } else if (mimeType.includes("wordprocessingml") && blob) {
+        await renderWordPreview(blob);
         return
-    } else if (type.includes("spreadsheetml") && blob) {
-        await renderExcelPreview(blob, container);
+    } else if (mimeType.includes("spreadsheetml") && blob) {
+        await renderExcelPreview(blob);
         return
     } else if (blob) {
-        await renderPlainTextPreview(blob, container);
+        await renderPlainTextPreview(blob);
         return
     }
 
@@ -139,7 +174,7 @@ async function renderGeneralPreview(blob, url, type, container) {
 
     button.addEventListener("click", async () => {
         buttonLoading(button, true, "下載中...");
-        await fetch(`${config.backendUrl}/web/v1/files/${fileId}?action=download`, {
+        await fetch(`${config.backendUrl}/web/v1/files/${currentFileId}?action=download`, {
             method: 'GET',
             credentials: 'include'
         }).then(response => handleResponse(response)).finally(() => {
@@ -149,7 +184,7 @@ async function renderGeneralPreview(blob, url, type, container) {
     container.appendChild(element);
 }
 
-function renderVideoPreview(url, container, type) {
+function renderVideoPreview(url, mimeType) {
     try {
         container.innerHTML = "";
         const element = document.createElement("video");
@@ -175,7 +210,7 @@ function renderVideoPreview(url, container, type) {
                     maxBufferLength: 60
                 }
             },
-            sources: [{src: url, type}]
+            sources: [{src: url, type: mimeType}]
         });
 
         document.removeEventListener("keydown", videoKeyboardHandler);
@@ -211,37 +246,58 @@ function renderVideoPreview(url, container, type) {
     }
 }
 
-function renderImagePreview(url, container) {
+function renderImagePreview(files) {
     try {
         container.innerHTML = "";
+        const gallery = document.createElement("div");
+        gallery.style.display = "none";
+        container.appendChild(gallery);
 
-        const img = document.createElement("img");
-        img.src = url;
-        img.style.maxWidth = "100%";
-        container.appendChild(img);
+        files.map((file) => {
+            const img = document.createElement("img");
+            img.src = `${config.backendUrl}/web/v1/files/${file.id}?action=preview`;
+            img.dataset.id = file.id;
+            if (file.id !== parseInt(currentFileId)) {
+                img.loading = "lazy";
+            }
+            gallery.appendChild(img);
+            return img;
+        });
 
-        const viewer = new Viewer(img, {
+        const currentIndex = files.findIndex(file => file.id === parseInt(currentFileId));
+
+        const currentImg = document.createElement("img");
+        currentImg.src = `${config.backendUrl}/web/v1/files/${currentFileId}?action=preview`;
+        currentImg.style.maxWidth = "100%";
+        container.appendChild(currentImg);
+
+        const choose = config.previewMutiFile ? gallery : currentImg
+        const viewer = new Viewer(choose, {
             inline: false,
             toolbar: {
                 zoomIn: true,
                 zoomOut: true,
                 oneToOne: true,
                 reset: true,
-                prev: false,
-                next: false,
+                prev: true,
+                next: true,
                 rotateLeft: true,
                 rotateRight: true,
                 flipHorizontal: true,
-                flipVertical: true,
+                flipVertical: true
             },
+            initialViewIndex: currentIndex >= 0 ? currentIndex : 0,
             hidden: () => {
-                img.style.visibility = "visible";
-            }
+                currentImg.style.visibility = "visible";
+            },
         });
-        img.addEventListener("click", () => {
-            img.style.visibility = "hidden";
+        currentImg.addEventListener("click", () => {
+            currentImg.style.visibility = "hidden";
             viewer.show();
         });
+        backgroundLoadImages(files.filter(file => file.id !== parseInt(currentFileId)));
+        $.NotificationApp.send("小提示", "可以點擊圖片進行預覽，左右鍵切換圖片", "top-right", "rgba(0,0,0,0.2)", "info");
+
     } catch (error) {
         const errorMessages = error.response?.data?.message || error;
         $.NotificationApp.send(`${errorMessages}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
@@ -249,8 +305,14 @@ function renderImagePreview(url, container) {
         container.innerHTML = "<p>無法預覽此圖片</p>";
     }
 }
+function backgroundLoadImages(imageFiles) {
+    imageFiles.forEach(file => {
+        const img = new Image();
+        img.src = `${config.backendUrl}/web/v1/files/${file.id}?action=preview`;
+    });
+}
 
-async function renderPDFPreview(url, container) {
+async function renderPDFPreview(url) {
     container.innerHTML = "<p>正在載入檔案...</p>";
 
     container.style.display = "flex";
@@ -572,7 +634,7 @@ async function renderPDFPreview(url, container) {
 }
 
 
-async function renderWordPreview(blob, container) {
+async function renderWordPreview(blob) {
     try {
         container.innerHTML = "<p>正在載入檔案...</p>";
         const blobSource = await blob;
@@ -601,7 +663,7 @@ async function renderWordPreview(blob, container) {
     }
 }
 
-async function renderExcelPreview(blob, container) {
+async function renderExcelPreview(blob) {
     try {
         container.innerHTML = "<p>正在載入檔案...</p>";
         const blobSource = await blob;
@@ -648,6 +710,7 @@ async function renderExcelPreview(blob, container) {
         const rowHeight = 25;
         const headerHeight = 25;
         const containerHeight = container.clientHeight - 70;
+
         rowsPerPage = Math.floor((containerHeight - headerHeight) / rowHeight) - 1;
         rowsPerPage = Math.max(rowsPerPage, 1);
 
@@ -726,6 +789,17 @@ async function renderExcelPreview(blob, container) {
                         }
                         return newRow;
                     });
+                }
+
+                const containerHeight = container.clientHeight - 70;
+                const minRows = Math.floor(containerHeight / rowHeight);
+                const actualRows = jsonData.length;
+
+                if (actualRows < minRows) {
+                    const emptyRow = new Array(jsonData[0].length).fill('');
+                    while (jsonData.length < minRows) {
+                        jsonData.push([...emptyRow]);
+                    }
                 }
 
                 totalPages = Math.ceil(jsonData.length / rowsPerPage);
@@ -815,7 +889,7 @@ async function renderExcelPreview(blob, container) {
     }
 }
 
-async function renderPlainTextPreview(blob, container) {
+async function renderPlainTextPreview(blob) {
     container.innerHTML = "<p>正在載入檔案...</p>";
     container.style.overflowY = 'auto';
     container.style.overflowX = 'auto';
@@ -906,10 +980,12 @@ async function renderPlainTextPreview(blob, container) {
 
 document.addEventListener("DOMContentLoaded", () => {
     const urlParams = new URLSearchParams(window.location.search);
-    fileId = urlParams.get("id")
+    currentFileId = urlParams.get("id")
+    folderId = urlParams.get("folder")
+    fileType = urlParams.get("type")
 
-    if (fileId) {
-        loadFilePreview(fileId).then(r => {
+    if (currentFileId) {
+        loadFilePreview(currentFileId).then(r => {
         });
     } else {
         document.getElementById("previewContainer").textContent = "未提供檔案 ID";

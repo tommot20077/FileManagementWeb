@@ -73,7 +73,7 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
                     } else if (file.fileType === 'ONLINE_DOCUMENT') {
                         await openEditor(file);
                     } else {
-                        await getFileResource(file.id, 'preview');
+                        await getFileResource(file, 'preview');
                     }
                 });
             }
@@ -221,7 +221,7 @@ document.addEventListener('click', async (event) => {
             if (file.fileType === 'ONLINE_DOCUMENT') {
                 await openEditor(file);
             } else {
-                await getFileResource(file.id, 'preview');
+                await getFileResource(file, 'preview');
             }
             break;
         case '下載':
@@ -230,7 +230,7 @@ document.addEventListener('click', async (event) => {
             } else if (file.fileType === 'ONLINE_DOCUMENT') {
                 await getOnlineFileResource(file.id);
             } else {
-                await getFileResource(file.id, 'download');
+                await getFileResource(file, 'download');
             }
             break;
         case '移動到回收桶':
@@ -279,12 +279,13 @@ async function openEditor(file) {
 }
 
 
-async function getFileResource(fileId, action) {
+async function getFileResource(file, action) {
     try {
         if (action === "preview") {
-            window.open(`/preview?id=${fileId}`, '_blank');
+            const folderId = file.parentFolderId ? file.parentFolderId : 0;
+            window.open(`/preview?id=${file.id}&folder=${folderId}&type=${file.fileType}`, '_blank');
         } else {
-            await fetch(`${config.backendUrl}/web/v1/files/${fileId}?action=download`, {
+            await fetch(`${config.backendUrl}/web/v1/files/${file.id}?action=download`, {
                 method: 'GET',
                 credentials: 'include'
             }).then(response => handleResponse(response));
