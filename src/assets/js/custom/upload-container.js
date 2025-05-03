@@ -315,6 +315,7 @@ document.getElementById('closeModal')?.addEventListener('click', () => {
     toggleUploadButtons(false);
     fetchFileList(currentFolderId).then();
     getUserInfo(true);
+    $.NotificationApp.send(`提示`, "部分上傳的檔案處理需要一段時間，若沒看到檔案，過一段時間刷新頁面即可 (•‿•)", "bottom-right", "rgba(0,0,0,0.2)", "info");
 });
 
 export default {};
