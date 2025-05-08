@@ -19,11 +19,16 @@ let container
 
 async function getFileMetadata(fileId) {
     try {
-        const response = await webConnector.get(`${config.backendUrl}/web/v1/files/${fileId}/info`, {xsrfCookieName: "useless"});
+        const response = await webConnector.get(`${config.backendUrl}/web/v1/files/${fileId}`, {
+            xsrfCookieName: "useless",
+            headers: {
+                "Range": "bytes=0-0"
+            }
+        });
 
         return {
             isSuccess: true,
-            mimeType: response.data.data["X-File-Content-Type"] || ""
+            mimeType: response.headers.getContentType() || ""
         };
     } catch (error) {
         const errorMessage = error.response?.data?.message || error;
@@ -305,6 +310,7 @@ function renderImagePreview(files) {
         container.innerHTML = "<p>無法預覽此圖片</p>";
     }
 }
+
 function backgroundLoadImages(imageFiles) {
     imageFiles.forEach(file => {
         const img = new Image();
