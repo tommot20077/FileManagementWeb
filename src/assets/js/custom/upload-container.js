@@ -12,7 +12,6 @@ Dropzone.autoDiscover = false;
 
 // 初始化 Dropzone
 let myDropzone;
-let jwtToken = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     // 確保 Dropzone 僅初始化一次
@@ -129,8 +128,7 @@ document.getElementById('submitUpload')?.addEventListener('click', () => {
                         toggleUploadButtons(false);
                         reject(error);
                     },
-                    Config.maxConcurrentChunks || 5,
-                    jwtToken
+                    Config.maxConcurrentChunks || 5
                 );
 
                 chunkManager.start();
@@ -154,18 +152,7 @@ document.getElementById('submitUpload')?.addEventListener('click', () => {
     });
 });
 
-document.getElementById("submitToken")?.addEventListener("click", (e) => {
-    e.preventDefault()
-    jwtToken = document.getElementById("jwtToken").value;
-});
-
 document.getElementById('submitUploadWs')?.addEventListener('click', () => {
-    if (!jwtToken) {
-        $.NotificationApp.send("請輸入 JWT 憑證", "", "bottom-right", "rgba(0,0,0,0.2)", "warning");
-        document.getElementById("check-ws-upload-modal-button").click();
-        return;
-    }
-
     removeDropzoneHandleFile(myDropzone);
     const files = myDropzone.files;
     if (files.length === 0) {
@@ -204,8 +191,7 @@ document.getElementById('submitUploadWs')?.addEventListener('click', () => {
                         toggleUploadButtons(false); // 上傳失敗後恢復按鈕
                         reject(error);
                     },
-                    Config.maxConcurrentChunks || 5,
-                    jwtToken
+                    Config.maxConcurrentChunks || 5
                 );
 
                 chunkManager.start();

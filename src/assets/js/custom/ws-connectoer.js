@@ -1,6 +1,6 @@
 export class WSConnector {
-    constructor(url, token) {
-        this.ws = new WebSocket(url, [`jwt.${token}`]);
+    constructor(url) {
+        this.ws = new WebSocket(url);
         this.listeners = {};
         this.ws.onopen = this.onOpen.bind(this);
         this.ws.onmessage = this.onMessage.bind(this);
@@ -22,7 +22,8 @@ export class WSConnector {
     }
 
     onError(error) {
-        $.NotificationApp.send(`WebSocket 錯誤:${error.response.data.message}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
+        const errorMessage = error?.response?.data?.message || "WebSocket 發生未知錯誤: " + error
+        $.NotificationApp.send(`WebSocket 錯誤: ${errorMessage}`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
 
         if (this.listeners['error']) {
             this.listeners['error'].forEach(callback => callback(error));

@@ -4,7 +4,7 @@ import webConnector from "./web-connector.js";
 import {WSConnector} from "./ws-connectoer.js";
 
 class ChunkUploadManager {
-    constructor(file, uploadMethod, onProgress, onComplete, onError, maxConcurrentChunks = 5, jwtToken) {
+    constructor(file, uploadMethod, onProgress, onComplete, onError, maxConcurrentChunks = 5) {
         this.file = file;
         this.uploadMethod = uploadMethod; // 'http' 或 'ws'
         this.onProgress = onProgress;
@@ -18,7 +18,6 @@ class ChunkUploadManager {
         this.chunkSize = 0;
         this.ws = null; // 只在 WebSocket 方法中使用
         this.retryCounts = {};
-        this.jwtToken = jwtToken;
         this.hasFailed = false;
     }
 
@@ -57,7 +56,7 @@ class ChunkUploadManager {
 
     initWsUpload() {
         const metadata = this.file.fileMetadata;
-        this.ws = new WSConnector(`${Config.wsUrl}/file/upload`, this.jwtToken);
+        this.ws = new WSConnector(`${Config.wsUrl}/file/upload`);
         this.ws.addEventListener('open', () => {
             const initialUploadMessage = {
                 type: "initialUpload",
