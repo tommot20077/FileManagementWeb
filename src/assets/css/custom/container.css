@@ -86,3 +86,12 @@
     pointer-events:none;
     background-color:var(--ct-list-group-disabled-bg);
 }
+
+@media (max-width: 768px) {
+    .pagination {
+        position: relative;
+        z-index: 1000;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+}

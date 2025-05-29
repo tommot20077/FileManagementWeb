@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (!params.get("id") || isNaN(parseInt(params.get("id")))) {
             $.NotificationApp.send(`文件ID格式不正确`, "", "bottom-right", "rgba(0,0,0,0.2)", "error");
-            return
+            return 
         }
         fileId = params.get("id");
     }

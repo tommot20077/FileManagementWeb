@@ -44,20 +44,16 @@ class FolderTree {
         if (this.folderCache[cacheKey]) {
             return this.folderCache[cacheKey];
         }
-
-        const response = await webConnector.get(`/folders/${folderId}?page=${page}`, {xsrfCookieName: "useless"});
+        const response = await webConnector.get(`/folders/${folderId}?page=${page}&type=folder`, {xsrfCookieName: "useless"});
         this.folderCache[cacheKey] = response.data.data;
         return response.data.data;
     }
 
 
-    async generateFolderList(folderId, parentElement) {
+    async generateFolderList(folderId, parentElement, page = 1) {
         parentElement.innerHTML = ''
 
-        const urlParams = new URLSearchParams(window.location.search);
-        let currentPage = parseInt(urlParams.get("page")) || 1;
-
-        const folderData = await this.getData(folderId, currentPage);
+        const folderData = await this.getData(folderId, page);
         const folders = folderData.files.data;
         const totalPages = folderData.files.totalPages;
         this.currentFolders = folderData.filePaths
@@ -89,7 +85,7 @@ class FolderTree {
         }
 
         folders.forEach((folder) => {
-            if (!folder.filename || folder.fileType !== 'FOLDER' || this.file && (folder.id === this.file.id)) {
+            if (!folder.filename || this.file && (folder.id === this.file.id)) {
                 return;
             }
 
@@ -112,8 +108,11 @@ class FolderTree {
             parentElement.appendChild(li);
         });
         await this.createPaginationControls(parentElement).then((paginationUl) => {
-            let showPage = totalPages === 0 ? 1 : totalPages
-            updatePaginationControls(currentPage, showPage, paginationUl);
+            let showPage = totalPages === 0 ? 1 : totalPages;
+            const folderTreePageChangeCallback = async (newPage) => {
+                await this.loadFolder(folderId, newPage); // Pass the new page to loadFolder
+            };
+            updatePaginationControls(page, showPage, paginationUl, {}, false, folderTreePageChangeCallback);
         });
     }
 
@@ -128,11 +127,11 @@ class FolderTree {
         return paginationUl
     }
 
-    async loadFolder(folderId) {
+    async loadFolder(folderId, page = 1) {
         this.selectedFolderId = folderId === 0 ? null : folderId;
         folderId = folderId === null ? 0 : folderId;
         const ul = this.container.querySelector('ul');
-        await this.generateFolderList(folderId, ul).then(() => {
+        await this.generateFolderList(folderId, ul, page).then(() => {
             this.updateBreadcrumb(folderId);
         });
     }

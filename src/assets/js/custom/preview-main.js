@@ -15,6 +15,7 @@ import canvasDatagrid from 'canvas-datagrid';
 let currentFileId
 let folderId
 let fileType
+let fileMimeType
 let container
 
 async function getFileMetadata(fileId) {
@@ -69,10 +70,33 @@ export async function loadFilePreview(fileId) {
     container = document.getElementById("previewContainer");
     const progressBar = document.getElementById("loading-progress-bar");
 
-    const [fileMetadata, folderMetadata] = await Promise.all([
-        getFileMetadata(fileId),
-        getFolderMetadata(folderId)
-    ]);
+    const promises = [];
+    let fileMetadataPromise;
+    let folderMetadataPromise;
+
+    if (fileMimeType) {
+        fileMetadataPromise = Promise.resolve({
+            isSuccess: true,
+            mimeType: fileMimeType
+        });
+    } else {
+        fileMetadataPromise = getFileMetadata(fileId);
+    }
+    promises.push(fileMetadataPromise);
+
+    if (folderId) {
+        folderMetadataPromise = getFolderMetadata(folderId);
+        promises.push(folderMetadataPromise);
+    } else {
+        folderMetadataPromise = Promise.resolve({ isSuccess: true, files: [] });
+        promises.push(folderMetadataPromise);
+    }
+
+
+    const results = await Promise.all(promises);
+
+    const fileMetadata = results[0];
+    const folderMetadata = results.length > 1 ? results[1] : { isSuccess: true, files: [] };
 
 
     if (!fileMetadata.isSuccess || !folderMetadata.isSuccess) {
@@ -989,6 +1013,7 @@ document.addEventListener("DOMContentLoaded", () => {
     currentFileId = urlParams.get("id")
     folderId = urlParams.get("folder")
     fileType = urlParams.get("type")
+    fileMimeType = urlParams.get("mime")
 
     if (currentFileId) {
         loadFilePreview(currentFileId).then(r => {

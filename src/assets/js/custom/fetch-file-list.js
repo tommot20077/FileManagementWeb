@@ -21,7 +21,6 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
         response = await webConnector.get(formatUrl(url, filter), {xsrfCookieName: "useless"});
         const files = response.data.data.files.data;
         const tbody = document.querySelector('.table-responsive tbody');
-        const owner = response.data.data.owner;
         const filePaths = response.data.data.filePaths;
         const totalPages = response.data.data.files.totalPages;
         const currentPage = response.data.data.files.currentPage;
@@ -85,14 +84,14 @@ export async function fetchFileList(folderId = 0, updateUrl = true, filter = {},
             modifiedP.textContent = file.lastAccessTime;
             const modifiedSpan = document.createElement('span');
             modifiedSpan.classList.add('font-12');
-            modifiedSpan.textContent = `由 ${owner}`;
+            modifiedSpan.textContent = `由 ${file.ownerUsername}`;
             modifiedTd.appendChild(modifiedP);
             modifiedTd.appendChild(modifiedSpan);
             tr.appendChild(modifiedTd);
 
             const sizeTd = document.createElement('td');
             const ownerTd = document.createElement('td');
-            ownerTd.textContent = owner;
+            ownerTd.textContent = file.ownerUsername;
             if (file.fileType !== 'FOLDER') {
                 sizeTd.textContent = formatFileSize(file.fileSize);
             } else {
@@ -283,7 +282,9 @@ async function getFileResource(file, action) {
     try {
         if (action === "preview") {
             const folderId = file.parentFolderId ? file.parentFolderId : 0;
-            window.open(`/preview?id=${file.id}&folder=${folderId}&type=${file.fileType}`, '_blank');
+            let url = `/preview?id=${file.id}&folder=${folderId}&type=${file.fileType}`;
+            url = url + (file.mimeType ? `&mime=${file.mimeType}` : '');
+            window.open(`${url}`, '_blank');
         } else {
             await fetch(`${config.backendUrl}/web/v1/files/${file.id}?action=download`, {
                 method: 'GET',

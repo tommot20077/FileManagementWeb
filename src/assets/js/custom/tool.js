@@ -29,7 +29,7 @@ function formatFileSize(size) {
     return `${size.toFixed(2)} ${unit[unitIndex]}`;
 }
 
-function updatePaginationControls(currentPage, totalPages, fatherDocument, filter = {}, isSearch = false) {
+function updatePaginationControls(currentPage, totalPages, fatherDocument, filter = {}, isSearch = false, pageChangeCallback = null) {
     let paginationContainer;
     if (fatherDocument) {
         paginationContainer = fatherDocument;
@@ -39,70 +39,73 @@ function updatePaginationControls(currentPage, totalPages, fatherDocument, filte
 
     paginationContainer.innerHTML = '';
 
-    const createPageItem = (page, isActive = false) => {
+    const isSmallScreen = window.innerWidth <= 768;
+
+    const createPageItem = (page, text, isActive = false, isDisabled = false) => {
         const li = document.createElement('li');
         li.classList.add('page-item');
         if (isActive) li.classList.add('active');
+        if (isDisabled) li.classList.add('disabled');
 
         const a = document.createElement('a');
         a.classList.add('page-link');
         a.href = 'javascript:void(0);';
-        a.textContent = page;
-        a.addEventListener('click', () => {
-            if (page !== currentPage) {
+        a.innerHTML = text;
+
+        if (!isDisabled && !isActive) {
+            a.addEventListener('click', () => {
                 filter.page = page;
-                fetchFileList(currentFolderId, true, filter, isSearch)
-            }
-        });
+                if (pageChangeCallback) {
+                    pageChangeCallback(page);
+                } else {
+                    fetchFileList(currentFolderId, true, filter, isSearch);
+                }
+            });
+        }
 
         li.appendChild(a);
         return li;
     };
 
-    // 上一頁按鈕
-    const prevLi = document.createElement('li');
-    prevLi.classList.add('page-item');
-    if (currentPage === 1) prevLi.classList.add('disabled');
-
-    const prevA = document.createElement('a');
-    prevA.classList.add('page-link');
-    prevA.href = 'javascript:void(0);';
-    prevA.setAttribute('aria-label', 'Previous');
-    prevA.innerHTML = '<span aria-hidden="true">&laquo;</span>';
-    prevA.addEventListener('click', () => {
-        if (currentPage > 1) {
-            filter.page = currentPage - 1;
-            fetchFileList(currentFolderId, true, filter, isSearch)
-        }
-    });
-
-    prevLi.appendChild(prevA);
-    paginationContainer.appendChild(prevLi);
-
-    // 動態添加分頁按鈕
-    for (let i = 1; i <= totalPages; i++) {
-        paginationContainer.appendChild(createPageItem(i, i === currentPage));
+    if (currentPage > 1) {
+        paginationContainer.appendChild(createPageItem(1, '&laquo;&laquo;'));
     }
 
-    // 下一頁按鈕
-    const nextLi = document.createElement('li');
-    nextLi.classList.add('page-item');
-    if (currentPage === totalPages) nextLi.classList.add('disabled');
+    if (currentPage > 1) {
+        paginationContainer.appendChild(createPageItem(currentPage - 1, '&laquo;'));
+    }
 
-    const nextA = document.createElement('a');
-    nextA.classList.add('page-link');
-    nextA.href = 'javascript:void(0);';
-    nextA.setAttribute('aria-label', 'Next');
-    nextA.innerHTML = '<span aria-hidden="true">&raquo;</span>';
-    nextA.addEventListener('click', () => {
-        if (currentPage < totalPages) {
-            filter.page = currentPage + 1;
-            fetchFileList(currentFolderId, true, filter, isSearch)
+    let startPage;
+    let endPage;
+
+    if (isSmallScreen) {
+        startPage = currentPage;
+        endPage = currentPage;
+    } else {
+        startPage = Math.max(1, currentPage - 2);
+        endPage = Math.min(totalPages, currentPage + 2);
+
+        if (endPage - startPage < 4) {
+            if (currentPage - startPage < 2) {
+                endPage = Math.min(totalPages, startPage + 4);
+            } else {
+                startPage = Math.max(1, endPage - 4);
+            }
         }
-    });
+    }
 
-    nextLi.appendChild(nextA);
-    paginationContainer.appendChild(nextLi);
+    for (let i = startPage; i <= endPage; i++) {
+        paginationContainer.appendChild(createPageItem(i, i, i === currentPage));
+    }
+
+    if (currentPage < totalPages) {
+        paginationContainer.appendChild(createPageItem(currentPage + 1, '&raquo;'));
+    }
+
+
+    if (currentPage < totalPages) {
+        paginationContainer.appendChild(createPageItem(totalPages, '&raquo;&raquo;'));
+    }
 }
 
 function convertToISOFormat(dateStr) {
